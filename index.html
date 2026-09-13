@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Mission Fajr</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- =========================================
+         LOGIN PAGE
+         ========================================= -->
+
+    <div id="loginSection">
+
+        <h1>Mission Fajr</h1>
+
+        <p>Student Attendance System</p>
+
+        <hr>
+
+        <h2>Login</h2>
+
+        <form onsubmit="login(); return false;">
+
+            <label for="email">
+                Email / Mobile Number
+            </label>
+
+            <input
+                type="text"
+                id="email"
+                placeholder="Enter email or mobile number"
+                autocomplete="username"
+                required
+            >
+
+            <br><br>
+
+            <label for="password">
+                Password
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit">
+                Login
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+        <p class="auth-link">
+            Don't have an account?
+            <button
+                type="button"
+                class="link-button"
+                onclick="showSignup()">
+                Sign up
+            </button>
+        </p>
+
+        <p class="auth-link">
+            <button
+                type="button"
+                class="link-button forgot-link"
+                onclick="showForgotPassword()">
+                Forgot password?
+            </button>
+        </p>
+
+    </div>
+
+
+    <!-- =========================================
+         SIGN UP PAGE
+         ========================================= -->
+         <div id="signupSection" style="display: none;">
+
+            <h1>Mission Fajr</h1>
+        
+            <p>Create your student account</p>
+        
+            <hr>
+        
+            <h2>Sign Up</h2>
+        
+            <form onsubmit="signup(); return false;">
+        
+                <label for="signupName">
+                    Full Name
+                </label>
+        
+                <input
+                    type="text"
+                    id="signupName"
+                    placeholder="Enter your full name"
+                    required
+                >
+        
+                <br><br>
+        
+                <label for="signupEmail">
+                    Email
+                </label>
+        
+                <input
+                    type="email"
+                    id="signupEmail"
+                    placeholder="Enter your email"
+                    autocomplete="email"
+                    required
+                >
+        
+                <br><br>
+        
+                <label for="signupPhone">
+                    Mobile Number
+                </label>
+        
+                <input
+                    type="tel"
+                    id="signupPhone"
+                    placeholder="Enter your mobile number"
+                    autocomplete="tel"
+                    required
+                >
+        
+                <br><br>
+        
+                <label for="signupPassword">
+                    Password
+                </label>
+        
+                <input
+                    type="password"
+                    id="signupPassword"
+                    placeholder="Create a password"
+                    autocomplete="new-password"
+                    required
+                >
+        
+                <br><br>
+        
+                <label for="signupConfirmPassword">
+                    Confirm Password
+                </label>
+        
+                <input
+                    type="password"
+                    id="signupConfirmPassword"
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                    required
+                >
+        
+                <br><br>
+        
+                <button type="submit">
+                    Sign Up
+                </button>
+        
+            </form>
+        
+            <p id="signupMessage"></p>
+        
+            <p class="auth-link">
+                Already have an account?
+        
+                <button
+                    type="button"
+                    class="link-button"
+                    onclick="showLogin()">
+                    Login
+                </button>
+            </p>
+        
+        </div>
+
+    <!-- =========================================
+         FORGOT PASSWORD
+         ========================================= -->
+
+    <div id="forgotPasswordSection" style="display: none;">
+
+        <h1>Mission Fajr</h1>
+
+        <p>Password Recovery</p>
+
+        <hr>
+
+        <h2>Forgot Password?</h2>
+
+        <p>
+            Enter the email address connected to your account.
+        </p>
+
+        <form onsubmit="sendPasswordRecovery(); return false;">
+
+            <label for="forgotEmail">
+                Email
+            </label>
+
+            <input
+                type="email"
+                id="forgotEmail"
+                placeholder="Enter your email"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit">
+                Send Recovery Email
+            </button>
+
+        </form>
+
+        <p id="forgotMessage"></p>
+
+        <p class="auth-link">
+
+            <button
+                type="button"
+                class="link-button"
+                onclick="showLogin()">
+                Back to Login
+            </button>
+
+        </p>
+
+    </div>
+
+
+    <!-- =========================================
+         SET NEW PASSWORD
+         ========================================= -->
+
+    <div id="resetPasswordSection" style="display: none;">
+
+        <h1>Mission Fajr</h1>
+
+        <p>Password Recovery</p>
+
+        <hr>
+
+        <h2>Set New Password</h2>
+
+        <form onsubmit="updatePassword(); return false;">
+
+            <label for="newPassword">
+                New Password
+            </label>
+
+            <input
+                type="password"
+                id="newPassword"
+                placeholder="Enter new password"
+                autocomplete="new-password"
+                required
+            >
+
+            <br><br>
+
+            <label for="confirmNewPassword">
+                Confirm Password
+            </label>
+
+            <input
+                type="password"
+                id="confirmNewPassword"
+                placeholder="Confirm new password"
+                autocomplete="new-password"
+                required
+            >
+
+            <br><br>
+
+            <button type="submit">
+                Update Password
+            </button>
+
+        </form>
+
+        <p id="resetMessage"></p>
+
+    </div>
+
+
+    <!-- =========================================
+         ADMIN DASHBOARD
+         ========================================= -->
+
+    <div id="adminDashboard" style="display: none;">
+
+        <h1>Admin Dashboard</h1>
+
+        <p>Welcome, Admin!</p>
+
+        <hr>
+
+        <h2>Attendance Management</h2>
+
+        <label for="attendanceDate">
+            Select Date:
+        </label>
+
+        <input
+            type="date"
+            id="attendanceDate"
+            onchange="loadAdminStudentsForDate()"
+        >
+
+        <br><br>
+
+        <div id="studentList">
+            Loading students...
+        </div>
+
+        <br>
+
+        <button
+            type="button"
+            onclick="saveAttendance()">
+            Save Attendance
+        </button>
+
+        <p id="attendanceMessage"></p>
+
+        <hr>
+
+        <h2>Absentees</h2>
+
+        <div id="adminAbsenteesList">
+            Select a date to view absentees.
+        </div>
+
+        <hr>
+
+        <h2>Attendance Details</h2>
+
+        <div id="adminAttendanceHistory">
+            Loading attendance...
+        </div>
+
+        <br>
+
+        <button
+            type="button"
+            onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+
+    <!-- =========================================
+         STUDENT DASHBOARD
+         ========================================= -->
+
+    <div id="studentDashboard" style="display: none;">
+
+        <h1>Student Dashboard</h1>
+
+        <p id="studentWelcome">
+            Welcome, Student!
+        </p>
+
+        <hr>
+
+        <!-- TODAY'S ATTENDANCE -->
+
+        <div class="today-attendance">
+
+            <h2>Today's Attendance</h2>
+
+            <p id="todayAttendanceStatus">
+                Today's Status: Not Marked
+            </p>
+
+            <div class="student-attendance-buttons">
+
+                <button
+                    type="button"
+                    class="student-present-btn"
+                    onclick="setMyAttendance(true)">
+                    ✓ Present
+                </button>
+
+                <button
+                    type="button"
+                    class="student-absent-btn"
+                    onclick="setMyAttendance(false)">
+                    ✕ Absent
+                </button>
+
+            </div>
+
+            <p id="studentAttendanceMessage"></p>
+
+        </div>
+
+        <hr>
+
+        <!-- MONTHLY SUMMARY -->
+
+        <h2>Monthly Attendance</h2>
+
+        <h3 id="attendancePercentage">
+            Attendance: Loading...
+        </h3>
+
+        <p id="totalDays">
+            Total Days: Loading...
+        </p>
+
+        <p id="presentDays">
+            Present: Loading...
+        </p>
+
+        <p id="absentDays">
+            Absent: Loading...
+        </p>
+
+        <hr>
+
+        <!-- DAILY HISTORY -->
+
+        <h2>Daily Attendance</h2>
+
+        <div id="attendanceHistory">
+            Loading attendance...
+        </div>
+
+        <br>
+
+        <button
+            type="button"
+            onclick="logout()">
+            Logout
+        </button>
+
+    </div>
+
+
+    <!-- =========================================
+         SUPABASE
+         ========================================= -->
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+
+    <script src="app.js"></script>
+
+</body>
+
+</html>

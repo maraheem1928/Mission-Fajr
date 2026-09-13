@@ -1,0 +1,1114 @@
+﻿* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+/* =========================================
+   BODY
+   ========================================= */
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    min-height: 100vh;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(25, 135, 84, 0.16),
+            transparent 35%
+        ),
+        radial-gradient(
+            circle at bottom right,
+            rgba(212, 175, 55, 0.12),
+            transparent 35%
+        ),
+        #f5f7f3;
+
+    color: #26352e;
+
+    padding: 30px 16px;
+}
+
+
+/* =========================================
+   COMMON DASHBOARD WIDTH
+   ========================================= */
+
+#loginSection,
+#signupSection,
+#forgotPasswordSection,
+#resetPasswordSection,
+#adminDashboard,
+#studentDashboard {
+    width: 100%;
+    max-width: 1050px;
+    margin: 0 auto;
+}
+
+
+/* =========================================
+   LOGIN / AUTH PAGES
+   ========================================= */
+
+#loginSection,
+#signupSection,
+#forgotPasswordSection,
+#resetPasswordSection {
+
+    max-width: 430px;
+
+    margin: 50px auto;
+
+    background: rgba(255, 255, 255, 0.97);
+
+    padding: 38px 32px;
+
+    border-radius: 24px;
+
+    box-shadow:
+        0 18px 45px rgba(25, 60, 45, 0.12);
+
+    border:
+        1px solid rgba(25, 100, 65, 0.08);
+
+    text-align: center;
+
+    position: relative;
+
+    overflow: hidden;
+}
+
+
+/* Islamic symbol */
+
+#loginSection::before,
+#signupSection::before,
+#forgotPasswordSection::before,
+#resetPasswordSection::before {
+
+    content: "☪";
+
+    display: block;
+
+    font-size: 48px;
+
+    color: #d4af37;
+
+    margin-bottom: 8px;
+}
+
+
+/* Auth headings */
+
+#loginSection h1,
+#signupSection h1,
+#forgotPasswordSection h1,
+#resetPasswordSection h1 {
+
+    color: #146b48;
+
+    font-size: 34px;
+
+    margin-bottom: 6px;
+
+    letter-spacing: 0.5px;
+}
+
+
+#loginSection > p,
+#signupSection > p,
+#forgotPasswordSection > p,
+#resetPasswordSection > p {
+
+    color: #718078;
+
+    font-size: 15px;
+
+    margin-bottom: 22px;
+}
+
+
+#loginSection h2,
+#signupSection h2,
+#forgotPasswordSection h2,
+#resetPasswordSection h2 {
+
+    color: #30483d;
+
+    margin-bottom: 20px;
+
+    font-size: 22px;
+}
+
+
+/* =========================================
+   HORIZONTAL LINE
+   ========================================= */
+
+hr {
+
+    border: none;
+
+    height: 1px;
+
+    background:
+        linear-gradient(
+            to right,
+            transparent,
+            #d7dfda,
+            transparent
+        );
+
+    margin: 22px 0;
+}
+
+
+/* =========================================
+   FORM
+   ========================================= */
+
+label {
+
+    font-weight: 600;
+
+    color: #40564b;
+}
+
+
+/* All text/email/password/date inputs */
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="password"],
+input[type="date"] {
+
+    width: 100%;
+
+    padding: 13px 15px;
+
+    margin-top: 7px;
+
+    border:
+        1px solid #d5ddd8;
+
+    border-radius: 12px;
+
+    background: #fbfcfb;
+
+    color: #26352e;
+
+    font-size: 15px;
+
+    outline: none;
+
+    transition: 0.2s ease;
+}
+
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus,
+input[type="password"]:focus,
+input[type="date"]:focus {
+
+    border-color: #27845c;
+
+    box-shadow:
+        0 0 0 4px rgba(39, 132, 92, 0.10);
+
+    background: white;
+}
+
+
+/* =========================================
+   BUTTONS
+   ========================================= */
+
+button {
+
+    border: none;
+
+    border-radius: 12px;
+
+    padding: 13px 22px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    background:
+        linear-gradient(
+            135deg,
+            #16734d,
+            #0d5a3b
+        );
+
+    color: white;
+
+    box-shadow:
+        0 7px 18px rgba(13, 90, 59, 0.18);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        opacity 0.2s ease;
+}
+
+
+button:hover {
+
+    transform: translateY(-2px);
+
+    box-shadow:
+        0 10px 22px rgba(13, 90, 59, 0.24);
+}
+
+
+button:active {
+
+    transform: translateY(0);
+}
+
+
+/* Login button */
+
+#loginSection form button,
+#signupSection form button,
+#forgotPasswordSection form button,
+#resetPasswordSection form button {
+
+    width: 100%;
+
+    margin-top: 4px;
+}
+
+
+/* =========================================
+   AUTH LINKS
+   ========================================= */
+
+.auth-link {
+
+    margin-top: 16px !important;
+
+    margin-bottom: 0 !important;
+
+    color: #718078 !important;
+}
+
+
+.link-button {
+
+    background: transparent;
+
+    color: #16734d;
+
+    padding: 0;
+
+    margin: 0;
+
+    box-shadow: none;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+.link-button:hover {
+
+    background: transparent;
+
+    box-shadow: none;
+
+    transform: none;
+
+    text-decoration: underline;
+}
+
+
+.forgot-link {
+
+    color: #b07b16;
+}
+
+
+/* =========================================
+   MESSAGES
+   ========================================= */
+
+#message,
+#signupMessage,
+#forgotMessage,
+#resetMessage,
+#attendanceMessage,
+#studentAttendanceMessage {
+
+    margin-top: 15px;
+
+    font-weight: 600;
+}
+
+
+/* =========================================
+   DASHBOARDS
+   ========================================= */
+
+#adminDashboard,
+#studentDashboard {
+
+    background:
+        linear-gradient(
+            135deg,
+            #115d40,
+            #0b4933
+        );
+
+    border-radius: 26px;
+
+    padding: 32px;
+
+    box-shadow:
+        0 20px 45px rgba(22, 65, 47, 0.18);
+}
+
+
+/* Mission Fajr decoration */
+
+#adminDashboard::before,
+#studentDashboard::before {
+
+    content: "☪  MISSION FAJR";
+
+    display: block;
+
+    color: #d4af37;
+
+    font-weight: 800;
+
+    font-size: 13px;
+
+    letter-spacing: 2px;
+
+    margin-bottom: 14px;
+}
+
+
+/* Dashboard headings */
+
+#adminDashboard > h1,
+#studentDashboard > h1 {
+
+    color: white;
+
+    font-size: 32px;
+
+    margin-bottom: 6px;
+}
+
+
+#adminDashboard > p,
+#studentDashboard > p {
+
+    color:
+        rgba(255, 255, 255, 0.82);
+}
+
+
+/* =========================================
+   GOLD HEADINGS
+   ========================================= */
+
+#adminDashboard h2,
+#studentDashboard h2 {
+
+    color: #d4af37;
+
+    font-size: 22px;
+
+    margin-bottom: 18px;
+}
+
+
+#studentDashboard h3 {
+
+    color: #d4af37;
+}
+
+
+/* =========================================
+   ADMIN DATE
+   ========================================= */
+
+#adminDashboard label[for="attendanceDate"] {
+
+    color: white;
+
+    font-weight: 600;
+}
+
+
+#attendanceDate {
+
+    max-width: 230px;
+
+    background: white;
+
+    color: #26352e;
+
+    border: 1px solid #d5ddd8;
+
+    margin-bottom: 12px;
+}
+
+
+/* =========================================
+   WHITE CONTENT CARDS
+   ========================================= */
+
+#studentList,
+#adminAbsenteesList,
+#adminAttendanceHistory,
+#attendanceHistory {
+
+    background: white;
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    min-height: 70px;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+
+/* =========================================
+   ADMIN STUDENT ROW
+   ========================================= */
+
+.admin-student-row {
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding: 15px 10px;
+
+    border-bottom:
+        1px solid #edf1ee;
+
+    transition:
+        background 0.15s ease;
+}
+
+
+.admin-student-row:last-child {
+
+    border-bottom: none;
+}
+
+
+.admin-student-row:hover {
+
+    background: #f7faf8;
+
+    border-radius: 10px;
+}
+
+
+.admin-student-name {
+
+    font-weight: 700;
+
+    color: #30483d;
+
+    flex: 1;
+}
+
+
+/* =========================================
+   ADMIN PRESENT / ABSENT CONTROLS
+   ========================================= */
+
+.admin-attendance-controls {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+}
+
+
+.admin-attendance-controls label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 5px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+/* Present */
+
+.admin-present-option {
+
+    color: #008000 !important;
+}
+
+
+/* Absent */
+
+.admin-absent-option {
+
+    color: #cc0000 !important;
+}
+
+
+/* Radio buttons */
+
+.admin-attendance-controls input[type="radio"] {
+
+    width: 17px;
+
+    height: 17px;
+
+    margin: 0;
+
+    cursor: pointer;
+}
+
+
+.admin-present-option input[type="radio"] {
+
+    accent-color: #008000;
+}
+
+
+.admin-absent-option input[type="radio"] {
+
+    accent-color: #cc0000;
+}
+
+
+/* =========================================
+   STUDENT TODAY'S ATTENDANCE
+   ========================================= */
+
+.today-attendance {
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    border:
+        1px solid rgba(255, 255, 255, 0.10);
+
+    border-radius: 18px;
+
+    padding: 20px;
+
+    margin-bottom: 20px;
+}
+
+
+.today-attendance h2 {
+
+    margin-bottom: 12px !important;
+}
+
+
+/* Today's status */
+
+#todayAttendanceStatus {
+
+    display: inline-block;
+
+    padding: 10px 16px;
+
+    border-radius: 10px;
+
+    font-weight: 800;
+
+    margin-bottom: 15px;
+}
+
+
+/* Not marked */
+
+.today-not-marked {
+
+    color: #444 !important;
+
+    background: #eeeeee !important;
+}
+
+
+/* Present */
+
+.today-present {
+
+    color: #08752f !important;
+
+    background: #d9f5e3 !important;
+}
+
+
+/* Absent */
+
+.today-absent {
+
+    color: #b30000 !important;
+
+    background: #fde0e0 !important;
+}
+
+
+/* =========================================
+   STUDENT PRESENT / ABSENT BUTTONS
+   ========================================= */
+
+.student-attendance-buttons {
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 15px;
+
+    margin-top: 8px;
+}
+
+
+.student-present-btn,
+.student-absent-btn {
+
+    min-width: 150px;
+
+    color: white;
+
+    font-size: 16px;
+}
+
+
+/* Present */
+
+.student-present-btn {
+
+    background:
+        linear-gradient(
+            135deg,
+            #16803c,
+            #086b2e
+        );
+
+    box-shadow:
+        0 7px 18px rgba(0, 128, 0, 0.20);
+}
+
+
+.student-present-btn:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            #1b9146,
+            #08752f
+        );
+}
+
+
+/* Absent */
+
+.student-absent-btn {
+
+    background:
+        linear-gradient(
+            135deg,
+            #dc3545,
+            #b02a37
+        );
+
+    box-shadow:
+        0 7px 18px rgba(176, 42, 55, 0.20);
+}
+
+
+.student-absent-btn:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            #e04454,
+            #b02a37
+        );
+}
+
+
+/* =========================================
+   MONTHLY ATTENDANCE SUMMARY
+   ========================================= */
+
+#attendancePercentage {
+
+    color: white;
+
+    background:
+        rgba(255, 255, 255, 0.08);
+
+    padding: 15px 18px;
+
+    border-radius: 12px;
+
+    margin-bottom: 15px;
+}
+
+
+/* Total */
+
+#totalDays {
+
+    display: block !important;
+
+    padding: 15px 20px !important;
+
+    margin: 10px 0 !important;
+
+    border-radius: 12px !important;
+
+    font-weight: 700 !important;
+
+    color: #000000 !important;
+
+    background:
+        #e0e0e0 !important;
+
+    border-left:
+        6px solid #000000 !important;
+}
+
+
+/* Present */
+
+#presentDays {
+
+    display: block !important;
+
+    padding: 15px 20px !important;
+
+    margin: 10px 0 !important;
+
+    border-radius: 12px !important;
+
+    font-weight: 700 !important;
+
+    color: #008000 !important;
+
+    background:
+        #d9f2df !important;
+
+    border-left:
+        6px solid #008000 !important;
+}
+
+
+/* Absent */
+
+#absentDays {
+
+    display: block !important;
+
+    padding: 15px 20px !important;
+
+    margin: 10px 0 !important;
+
+    border-radius: 12px !important;
+
+    font-weight: 700 !important;
+
+    color: #cc0000 !important;
+
+    background:
+        #f8dada !important;
+
+    border-left:
+        6px solid #cc0000 !important;
+}
+
+
+/* =========================================
+   ATTENDANCE HISTORY
+   ========================================= */
+
+#attendanceHistory p,
+#adminAttendanceHistory p {
+
+    margin: 0;
+
+    padding: 13px 10px;
+
+    border-bottom:
+        1px solid #edf1ee;
+
+    color: #40534a;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+#attendanceHistory p:last-child,
+#adminAttendanceHistory p:last-child {
+
+    border-bottom: none;
+}
+
+
+#attendanceHistory p:hover,
+#adminAttendanceHistory p:hover {
+
+    background: #f7faf8;
+}
+
+
+/* Present history */
+
+.present-status {
+
+    color: #008000 !important;
+}
+
+
+/* Absent history */
+
+.absent-status {
+
+    color: #cc0000 !important;
+}
+
+
+/* =========================================
+   ADMIN ABSENTEES
+   ========================================= */
+
+#adminAbsenteesList {
+
+    color: #cc0000;
+
+    font-weight: 700;
+}
+
+
+.admin-absentee-row {
+
+    padding: 12px 10px;
+
+    border-bottom:
+        1px solid #f0dddd;
+}
+
+
+.admin-absentee-row:last-child {
+
+    border-bottom: none;
+}
+
+
+/* =========================================
+   LOGOUT
+   ========================================= */
+
+#adminDashboard > button,
+#studentDashboard > button {
+
+    margin-top: 10px;
+
+    background:
+        linear-gradient(
+            135deg,
+            #dc3545,
+            #b02a37
+        );
+
+    color: white;
+
+    box-shadow:
+        0 7px 18px rgba(176, 42, 55, 0.20);
+}
+
+
+#adminDashboard > button:hover,
+#studentDashboard > button:hover {
+
+    background:
+        linear-gradient(
+            135deg,
+            #e04454,
+            #b02a37
+        );
+
+    box-shadow:
+        0 10px 22px rgba(176, 42, 55, 0.28);
+}
+
+
+/* =========================================
+   DECORATIVE ISLAMIC TOUCH
+   ========================================= */
+
+#adminDashboard::after,
+#studentDashboard::after {
+
+    content: "✦  ۞  ✦";
+
+    display: block;
+
+    text-align: center;
+
+    color:
+        rgba(212, 175, 55, 0.65);
+
+    font-size: 18px;
+
+    margin-top: 28px;
+
+    letter-spacing: 8px;
+}
+
+
+/* =========================================
+   MOBILE
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    body {
+
+        padding: 15px 10px;
+    }
+
+
+    #loginSection,
+    #signupSection,
+    #forgotPasswordSection,
+    #resetPasswordSection {
+
+        margin: 25px auto;
+
+        padding: 30px 22px;
+
+        border-radius: 20px;
+    }
+
+
+    #loginSection h1,
+    #signupSection h1,
+    #forgotPasswordSection h1,
+    #resetPasswordSection h1 {
+
+        font-size: 29px;
+    }
+
+
+    #adminDashboard,
+    #studentDashboard {
+
+        padding: 23px 17px;
+
+        border-radius: 21px;
+    }
+
+
+    #adminDashboard > h1,
+    #studentDashboard > h1 {
+
+        font-size: 27px;
+    }
+
+
+    #studentList,
+    #adminAbsenteesList,
+    #adminAttendanceHistory,
+    #attendanceHistory {
+
+        padding: 15px;
+
+        border-radius: 15px;
+    }
+
+
+    #attendancePercentage {
+
+        font-size: 22px;
+    }
+
+
+    button {
+
+        width: 100%;
+    }
+
+
+    #attendanceDate {
+
+        max-width: 100%;
+
+        width: 100%;
+    }
+
+
+    /* Admin student row */
+
+    .admin-student-row {
+
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 12px;
+    }
+
+
+    .admin-attendance-controls {
+
+        width: 100%;
+
+        justify-content: space-between;
+    }
+
+
+    /* Student attendance buttons */
+
+    .student-attendance-buttons {
+
+        flex-direction: column;
+
+        gap: 10px;
+    }
+
+
+    .student-present-btn,
+    .student-absent-btn {
+
+        width: 100%;
+    }
+
+}
