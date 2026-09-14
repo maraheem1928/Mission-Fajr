@@ -1383,8 +1383,8 @@ async function saveAttendance() {
 
 }
 // =========================================
-// =========================================
 // ADMIN - ATTENDANCE HISTORY
+// DAILY SUMMARY
 // =========================================
 
 async function loadAdminAttendance() {
@@ -1429,6 +1429,7 @@ async function loadAdminAttendance() {
     if (error) {
 
         console.error(
+            "Attendance history error:",
             error
         );
 
@@ -1476,6 +1477,7 @@ async function loadAdminAttendance() {
     if (studentsError) {
 
         console.error(
+            "Student names error:",
             studentsError
         );
 
@@ -1509,141 +1511,399 @@ async function loadAdminAttendance() {
 
 
     // =========================================
-    // CREATE TABLE
+    // GROUP ATTENDANCE BY DATE
     // =========================================
 
-    const table =
-        document.createElement(
-            "table"
-        );
+    const dateMap = {};
 
-    table.className =
-        "admin-history-table";
-
-
-    // =========================================
-    // TABLE HEADER
-    // =========================================
-
-    table.innerHTML = `
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Student</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    `;
-
-
-    const tbody =
-        table.querySelector(
-            "tbody"
-        );
-
-
-    // =========================================
-    // TABLE ROWS
-    // =========================================
 
     data.forEach(
         record => {
 
-            const row =
-                document.createElement(
-                    "tr"
-                );
+            if (
+                !dateMap[
+                    record.attendance_date
+                ]
+            ) {
+
+                dateMap[
+                    record.attendance_date
+                ] = {
+                    present: [],
+                    absent: []
+                };
+
+            }
 
 
-            const dateCell =
-                document.createElement(
-                    "td"
-                );
-
-            const dateObject =
-                new Date(
-                    record.attendance_date +
-                    "T00:00:00"
-                );
-
-
-            dateCell.textContent =
-                dateObject.toLocaleDateString(
-                    "en-IN",
-                    {
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                    }
-                );
-
-
-            const studentCell =
-                document.createElement(
-                    "td"
-                );
-
-            studentCell.textContent =
+            const studentName =
                 nameMap[
                     record.user_id
                 ] ||
                 "Unknown Student";
 
 
-            const statusCell =
-                document.createElement(
-                    "td"
-                );
-
-
             if (
                 record.present === true
             ) {
 
-                statusCell.textContent =
-                    "✓ Present";
-
-                statusCell.className =
-                    "history-present";
+                dateMap[
+                    record.attendance_date
+                ].present.push(
+                    studentName
+                );
 
             } else {
 
-                statusCell.textContent =
-                    "✕ Absent";
-
-                statusCell.className =
-                    "history-absent";
+                dateMap[
+                    record.attendance_date
+                ].absent.push(
+                    studentName
+                );
 
             }
-
-
-            row.appendChild(
-                dateCell
-            );
-
-            row.appendChild(
-                studentCell
-            );
-
-            row.appendChild(
-                statusCell
-            );
-
-
-            tbody.appendChild(
-                row
-            );
 
         }
     );
 
 
+    // =========================================
+    // CLEAR HISTORY
+    // =========================================
+
     history.innerHTML = "";
 
-    history.appendChild(
-        table
-    );
+
+    // =========================================
+    // CREATE DAILY HISTORY
+    // =========================================
+
+    Object.keys(dateMap)
+        .sort(
+            (a, b) =>
+                b.localeCompare(a)
+        )
+        .forEach(
+            date => {
+
+                const dayData =
+                    dateMap[date];
+
+
+                // =====================================
+                // MAIN DAILY ROW
+                // =====================================
+
+                const dayContainer =
+                    document.createElement(
+                        "div"
+                    );
+
+                dayContainer.className =
+                    "admin-daily-history";
+
+
+                // =====================================
+                // DATE
+                // =====================================
+
+                const dateObject =
+                    new Date(
+                        date +
+                        "T00:00:00"
+                    );
+
+
+                const dateText =
+                    dateObject.toLocaleDateString(
+                        "en-IN",
+                        {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric"
+                        }
+                    );
+
+
+                const dateCell =
+                    document.createElement(
+                        "div"
+                    );
+
+                dateCell.className =
+                    "admin-daily-date";
+
+                dateCell.textContent =
+                    dateText;
+
+
+                // =====================================
+                // PRESENT BUTTON
+                // =====================================
+
+                const presentButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                presentButton.type =
+                    "button";
+
+                presentButton.className =
+                    "admin-history-count present-count";
+
+                presentButton.textContent =
+                    `${dayData.present.length} Presentee${dayData.present.length === 1 ? "" : "s"}`;
+
+
+                // =====================================
+                // ABSENT BUTTON
+                // =====================================
+
+                const absentButton =
+                    document.createElement(
+                        "button"
+                    );
+
+                absentButton.type =
+                    "button";
+
+                absentButton.className =
+                    "admin-history-count absent-count";
+
+                absentButton.textContent =
+                    `${dayData.absent.length} Absentee${dayData.absent.length === 1 ? "" : "s"}`;
+
+
+                // =====================================
+                // NAME LIST CONTAINER
+                // =====================================
+
+                const namesContainer =
+                    document.createElement(
+                        "div"
+                    );
+
+                namesContainer.className =
+                    "admin-history-names";
+
+
+                // =====================================
+                // PRESENT NAMES
+                // =====================================
+
+                const presentNames =
+                    document.createElement(
+                        "div"
+                    );
+
+                presentNames.className =
+                    "admin-history-name-group present-name-group";
+
+                presentNames.style.display =
+                    "none";
+
+
+                const presentTitle =
+                    document.createElement(
+                        "div"
+                    );
+
+                presentTitle.className =
+                    "admin-history-name-title";
+
+                presentTitle.textContent =
+                    "Presentees";
+
+
+                presentNames.appendChild(
+                    presentTitle
+                );
+
+
+                dayData.present.forEach(
+                    (name, index) => {
+
+                        const nameRow =
+                            document.createElement(
+                                "div"
+                            );
+
+                        nameRow.className =
+                            "admin-history-name-row";
+
+                        nameRow.textContent =
+                            `${index + 1}. ${name}`;
+
+                        presentNames.appendChild(
+                            nameRow
+                        );
+
+                    }
+                );
+
+
+                // =====================================
+                // ABSENT NAMES
+                // =====================================
+
+                const absentNames =
+                    document.createElement(
+                        "div"
+                    );
+
+                absentNames.className =
+                    "admin-history-name-group absent-name-group";
+
+                absentNames.style.display =
+                    "none";
+
+
+                const absentTitle =
+                    document.createElement(
+                        "div"
+                    );
+
+                absentTitle.className =
+                    "admin-history-name-title";
+
+                absentTitle.textContent =
+                    "Absentees";
+
+
+                absentNames.appendChild(
+                    absentTitle
+                );
+
+
+                dayData.absent.forEach(
+                    (name, index) => {
+
+                        const nameRow =
+                            document.createElement(
+                                "div"
+                            );
+
+                        nameRow.className =
+                            "admin-history-name-row";
+
+                        nameRow.textContent =
+                            `${index + 1}. ${name}`;
+
+                        absentNames.appendChild(
+                            nameRow
+                        );
+
+                    }
+                );
+
+
+                namesContainer.appendChild(
+                    presentNames
+                );
+
+                namesContainer.appendChild(
+                    absentNames
+                );
+
+
+                // =====================================
+                // BUTTON CLICK - PRESENT
+                // =====================================
+
+                presentButton.addEventListener(
+                    "click",
+                    () => {
+
+                        const isHidden =
+                            presentNames.style.display ===
+                            "none";
+
+
+                        presentNames.style.display =
+                            isHidden
+                                ? "block"
+                                : "none";
+
+
+                        presentButton.classList.toggle(
+                            "active",
+                            isHidden
+                        );
+
+                    }
+                );
+
+
+                // =====================================
+                // BUTTON CLICK - ABSENT
+                // =====================================
+
+                absentButton.addEventListener(
+                    "click",
+                    () => {
+
+                        const isHidden =
+                            absentNames.style.display ===
+                            "none";
+
+
+                        absentNames.style.display =
+                            isHidden
+                                ? "block"
+                                : "none";
+
+
+                        absentButton.classList.toggle(
+                            "active",
+                            isHidden
+                        );
+
+                    }
+                );
+
+
+                // =====================================
+                // DAILY ROW
+                // =====================================
+
+                const dailyTop =
+                    document.createElement(
+                        "div"
+                    );
+
+                dailyTop.className =
+                    "admin-daily-top";
+
+
+                dailyTop.appendChild(
+                    dateCell
+                );
+
+                dailyTop.appendChild(
+                    presentButton
+                );
+
+                dailyTop.appendChild(
+                    absentButton
+                );
+
+
+                dayContainer.appendChild(
+                    dailyTop
+                );
+
+                dayContainer.appendChild(
+                    namesContainer
+                );
+
+
+                history.appendChild(
+                    dayContainer
+                );
+
+            }
+        );
 
 }
 // =========================================
