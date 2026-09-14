@@ -535,13 +535,11 @@ button:active {
 
     flex: 1;
 }
-
-
 /* =========================================
    ADMIN PRESENT / ABSENT CONTROLS
    ========================================= */
 
-.admin-attendance-controls {
+.admin-attendance-options {
 
     display: flex;
 
@@ -551,360 +549,72 @@ button:active {
 }
 
 
-.admin-attendance-controls label {
+/* Present / Absent option */
+
+.admin-status-option {
 
     display: flex;
 
     align-items: center;
 
-    gap: 5px;
+    gap: 6px;
 
     font-size: 14px;
 
     font-weight: 700;
 
     cursor: pointer;
+
+    white-space: nowrap;
 }
 
 
 /* Present */
 
-.admin-present-option {
+.admin-status-option.present-option {
 
-    color: #008000 !important;
+    color: #08752f !important;
 }
 
 
 /* Absent */
 
-.admin-absent-option {
+.admin-status-option.absent-option {
 
-    color: #cc0000 !important;
+    color: #b30000 !important;
 }
 
 
 /* Radio buttons */
 
-.admin-attendance-controls input[type="radio"] {
+.admin-attendance-radio {
 
-    width: 17px;
+    width: 17px !important;
 
-    height: 17px;
+    height: 17px !important;
 
-    margin: 0;
+    margin: 0 !important;
+
+    padding: 0 !important;
 
     cursor: pointer;
 }
 
 
-.admin-present-option input[type="radio"] {
+/* Present radio */
 
-    accent-color: #008000;
+.present-option .admin-attendance-radio {
+
+    accent-color: #08752f;
 }
 
 
-.admin-absent-option input[type="radio"] {
+/* Absent radio */
 
-    accent-color: #cc0000;
+.absent-option .admin-attendance-radio {
+
+    accent-color: #b30000;
 }
-
-
-/* =========================================
-   STUDENT TODAY'S ATTENDANCE
-   ========================================= */
-
-.today-attendance {
-
-    background:
-        rgba(255, 255, 255, 0.08);
-
-    border:
-        1px solid rgba(255, 255, 255, 0.10);
-
-    border-radius: 18px;
-
-    padding: 20px;
-
-    margin-bottom: 20px;
-}
-
-
-.today-attendance h2 {
-
-    margin-bottom: 12px !important;
-}
-
-
-/* Today's status */
-
-#todayAttendanceStatus {
-
-    display: inline-block;
-
-    padding: 10px 16px;
-
-    border-radius: 10px;
-
-    font-weight: 800;
-
-    margin-bottom: 15px;
-}
-
-
-/* Not marked */
-
-.today-not-marked {
-
-    color: #444 !important;
-
-    background: #eeeeee !important;
-}
-
-
-/* Present */
-
-.today-present {
-
-    color: #08752f !important;
-
-    background: #d9f5e3 !important;
-}
-
-
-/* Absent */
-
-.today-absent {
-
-    color: #b30000 !important;
-
-    background: #fde0e0 !important;
-}
-
-
-/* =========================================
-   STUDENT PRESENT / ABSENT BUTTONS
-   ========================================= */
-
-.student-attendance-buttons {
-
-    display: flex;
-
-    justify-content: center;
-
-    gap: 15px;
-
-    margin-top: 8px;
-}
-
-
-.student-present-btn,
-.student-absent-btn {
-
-    min-width: 150px;
-
-    color: white;
-
-    font-size: 16px;
-}
-
-
-/* Present */
-
-.student-present-btn {
-
-    background:
-        linear-gradient(
-            135deg,
-            #16803c,
-            #086b2e
-        );
-
-    box-shadow:
-        0 7px 18px rgba(0, 128, 0, 0.20);
-}
-
-
-.student-present-btn:hover {
-
-    background:
-        linear-gradient(
-            135deg,
-            #1b9146,
-            #08752f
-        );
-}
-
-
-/* Absent */
-
-.student-absent-btn {
-
-    background:
-        linear-gradient(
-            135deg,
-            #dc3545,
-            #b02a37
-        );
-
-    box-shadow:
-        0 7px 18px rgba(176, 42, 55, 0.20);
-}
-
-
-.student-absent-btn:hover {
-
-    background:
-        linear-gradient(
-            135deg,
-            #e04454,
-            #b02a37
-        );
-}
-
-
-/* =========================================
-   MONTHLY ATTENDANCE SUMMARY
-   ========================================= */
-
-#attendancePercentage {
-
-    color: white;
-
-    background:
-        rgba(255, 255, 255, 0.08);
-
-    padding: 15px 18px;
-
-    border-radius: 12px;
-
-    margin-bottom: 15px;
-}
-
-
-/* Total */
-
-#totalDays {
-
-    display: block !important;
-
-    padding: 15px 20px !important;
-
-    margin: 10px 0 !important;
-
-    border-radius: 12px !important;
-
-    font-weight: 700 !important;
-
-    color: #000000 !important;
-
-    background:
-        #e0e0e0 !important;
-
-    border-left:
-        6px solid #000000 !important;
-}
-
-
-/* Present */
-
-#presentDays {
-
-    display: block !important;
-
-    padding: 15px 20px !important;
-
-    margin: 10px 0 !important;
-
-    border-radius: 12px !important;
-
-    font-weight: 700 !important;
-
-    color: #008000 !important;
-
-    background:
-        #d9f2df !important;
-
-    border-left:
-        6px solid #008000 !important;
-}
-
-
-/* Absent */
-
-#absentDays {
-
-    display: block !important;
-
-    padding: 15px 20px !important;
-
-    margin: 10px 0 !important;
-
-    border-radius: 12px !important;
-
-    font-weight: 700 !important;
-
-    color: #cc0000 !important;
-
-    background:
-        #f8dada !important;
-
-    border-left:
-        6px solid #cc0000 !important;
-}
-
-
-/* =========================================
-   ATTENDANCE HISTORY
-   ========================================= */
-
-#attendanceHistory p,
-#adminAttendanceHistory p {
-
-    margin: 0;
-
-    padding: 13px 10px;
-
-    border-bottom:
-        1px solid #edf1ee;
-
-    color: #40534a;
-
-    font-size: 14px;
-
-    font-weight: 600;
-}
-
-
-#attendanceHistory p:last-child,
-#adminAttendanceHistory p:last-child {
-
-    border-bottom: none;
-}
-
-
-#attendanceHistory p:hover,
-#adminAttendanceHistory p:hover {
-
-    background: #f7faf8;
-}
-
-
-/* Present history */
-
-.present-status {
-
-    color: #008000 !important;
-}
-
-
-/* Absent history */
-
-.absent-status {
-
-    color: #cc0000 !important;
-}
-
-
 /* =========================================
    ADMIN ABSENTEES
    ========================================= */
@@ -1074,36 +784,17 @@ button:active {
         width: 100%;
     }
 
+    /* Admin attendance options */
 
-    /* Admin student row */
-
-    .admin-student-row {
-
-        flex-direction: column;
-
-        align-items: flex-start;
-
-        gap: 12px;
-    }
-
-
-    .admin-attendance-controls {
+    .admin-attendance-options {
 
         width: 100%;
 
         justify-content: space-between;
     }
 
-
-    /* Student attendance buttons */
-
-    .student-attendance-buttons {
-
-        flex-direction: column;
-
-        gap: 10px;
-    }
-}    
+}
+   
 /* =========================================================
    MISSION FAJR - STUDENT ATTENDANCE
    NEW CLEAN DESIGN
