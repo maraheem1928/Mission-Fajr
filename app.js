@@ -1287,8 +1287,6 @@ async function loadAdminAbsentees(date) {
         }
     );
 }
-
-
 // =========================================
 // STUDENT - CHECK SELECTED DATE
 // =========================================
@@ -1298,6 +1296,11 @@ async function checkSelectedAttendanceDate() {
     const dateInput =
         document.getElementById(
             "studentAttendanceDate"
+        );
+
+    const selectedDateText =
+        document.getElementById(
+            "selectedAttendanceDate"
         );
 
     const status =
@@ -1347,22 +1350,76 @@ async function checkSelectedAttendanceDate() {
     ];
 
 
-    presentButton.disabled = false;
-    absentButton.disabled = false;
+    // =========================================
+    // UPDATE SELECTED DATE DISPLAY
+    // =========================================
 
-    message.textContent = "";
+    if (selectedDateText) {
 
+        if (selectedDate) {
+
+            const selectedDateObject =
+                new Date(
+                    selectedDate +
+                    "T00:00:00"
+                );
+
+            selectedDateText.textContent =
+                selectedDateObject.toLocaleDateString(
+                    "en-IN",
+                    {
+                        weekday: "long",
+                        day: "2-digit",
+                        month: "long",
+                        year: "numeric"
+                    }
+                );
+
+        } else {
+
+            selectedDateText.textContent =
+                "-";
+
+        }
+
+    }
+
+
+    // =========================================
+    // RESET BUTTONS / MESSAGE
+    // =========================================
+
+    if (presentButton) {
+        presentButton.disabled = false;
+    }
+
+    if (absentButton) {
+        absentButton.disabled = false;
+    }
+
+    if (message) {
+        message.textContent = "";
+    }
+
+
+    // =========================================
+    // NO DATE SELECTED
+    // =========================================
 
     if (!selectedDate) {
 
-        status.textContent =
-            "Please select a date.";
+        if (status) {
+            status.textContent =
+                "Please select a date.";
+        }
 
-        presentButton.disabled =
-            true;
+        if (presentButton) {
+            presentButton.disabled = true;
+        }
 
-        absentButton.disabled =
-            true;
+        if (absentButton) {
+            absentButton.disabled = true;
+        }
 
         return;
     }
@@ -1378,26 +1435,30 @@ async function checkSelectedAttendanceDate() {
         )
     ) {
 
-        if (
-            selectedDate > today
-        ) {
+        if (status) {
 
-            status.textContent =
-                "Future dates are not available.";
+            if (selectedDate > today) {
 
-        } else {
+                status.textContent =
+                    "Future dates are not available.";
 
-            status.textContent =
-                "Attendance can only be entered for today, yesterday, or the day before yesterday.";
+            } else {
+
+                status.textContent =
+                    "Attendance can only be entered for today, yesterday, or the day before yesterday.";
+
+            }
 
         }
 
 
-        presentButton.disabled =
-            true;
+        if (presentButton) {
+            presentButton.disabled = true;
+        }
 
-        absentButton.disabled =
-            true;
+        if (absentButton) {
+            absentButton.disabled = true;
+        }
 
         return;
     }
@@ -1420,14 +1481,18 @@ async function checkSelectedAttendanceDate() {
         !user
     ) {
 
-        status.textContent =
-            "Please login again.";
+        if (status) {
+            status.textContent =
+                "Please login again.";
+        }
 
-        presentButton.disabled =
-            true;
+        if (presentButton) {
+            presentButton.disabled = true;
+        }
 
-        absentButton.disabled =
-            true;
+        if (absentButton) {
+            absentButton.disabled = true;
+        }
 
         return;
     }
@@ -1458,16 +1523,23 @@ async function checkSelectedAttendanceDate() {
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Attendance check error:",
+            error
+        );
 
-        status.textContent =
-            "Unable to check attendance.";
+        if (status) {
+            status.textContent =
+                "Unable to check attendance.";
+        }
 
-        presentButton.disabled =
-            true;
+        if (presentButton) {
+            presentButton.disabled = true;
+        }
 
-        absentButton.disabled =
-            true;
+        if (absentButton) {
+            absentButton.disabled = true;
+        }
 
         return;
     }
@@ -1486,21 +1558,31 @@ async function checkSelectedAttendanceDate() {
             existing[0];
 
 
-        status.textContent =
-            record.present
-                ? "Present ✓"
-                : "Absent ✕";
+        if (status) {
+
+            status.textContent =
+                record.present
+                    ? "Present ✓"
+                    : "Absent ✕";
+
+        }
 
 
-        message.textContent =
-            "Attendance already submitted. This record is locked and cannot be changed.";
+        if (message) {
+
+            message.textContent =
+                "Attendance already submitted. This record is locked and cannot be changed.";
+
+        }
 
 
-        presentButton.disabled =
-            true;
+        if (presentButton) {
+            presentButton.disabled = true;
+        }
 
-        absentButton.disabled =
-            true;
+        if (absentButton) {
+            absentButton.disabled = true;
+        }
 
         return;
     }
@@ -1510,22 +1592,31 @@ async function checkSelectedAttendanceDate() {
     // NOT SUBMITTED
     // =========================================
 
-    status.textContent =
-        "Not submitted yet.";
+    if (status) {
+
+        status.textContent =
+            "Not submitted yet.";
+
+    }
 
 
-    message.textContent =
-        "You can submit attendance for this date.";
+    if (message) {
+
+        message.textContent =
+            "You can submit attendance for this date.";
+
+    }
 
 
-    presentButton.disabled =
-        false;
+    if (presentButton) {
+        presentButton.disabled = false;
+    }
 
-    absentButton.disabled =
-        false;
+    if (absentButton) {
+        absentButton.disabled = false;
+    }
+
 }
-
-
 // =========================================
 // STUDENT - SUBMIT ATTENDANCE
 // =========================================
