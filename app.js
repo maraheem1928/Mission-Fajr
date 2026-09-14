@@ -104,13 +104,14 @@ function getDateOffset(days) {
 // LOGIN
 // =========================================
 
+// =========================================
+// LOGIN
+// =========================================
+
 async function login() {
 
-    const emailInput =
+    const loginInput =
         document.getElementById("loginEmail");
-
-    const phoneInput =
-        document.getElementById("loginPhone");
 
     const passwordInput =
         document.getElementById("loginPassword");
@@ -118,219 +119,131 @@ async function login() {
     const message =
         document.getElementById("loginMessage");
 
+    const phone =
+        loginInput ? loginInput.value.trim() : "";
+
     const password =
         passwordInput ? passwordInput.value : "";
-
-    const email =
-        emailInput ? emailInput.value.trim() : "";
-
-    const phone =
-        phoneInput ? phoneInput.value.trim() : "";
 
     if (message) {
         message.textContent = "";
     }
 
+    if (!phone) {
+        message.textContent =
+            "Please enter your mobile number.";
+        return;
+    }
 
     if (!password) {
-
-        if (message) {
-            message.textContent =
-                "Please enter your password.";
-        }
-
-        return;
-    }
-
-
-    // =========================================
-    // MOBILE NUMBER LOGIN
-    // =========================================
-
-    if (phone && !email) {
-
-        if (message) {
-            message.textContent =
-                "Logging in...";
-        }
-
-        try {
-
-            const { data, error } =
-                await supabase.functions.invoke(
-                    "swift-endpoint",
-                    {
-                        body: {
-                            phone: phone,
-                            password: password
-                        }
-                    }
-                );
-
-
-            if (error) {
-
-                console.error(
-                    "Phone login error:",
-                    error
-                );
-
-                if (message) {
-                    message.textContent =
-                        error.message ||
-                        "Mobile login failed.";
-                }
-
-                return;
-            }
-
-
-            // Edge Function may return:
-            // { access_token, refresh_token }
-            // OR
-            // { session: { access_token, refresh_token } }
-
-            const sessionData =
-                data?.session || data;
-
-
-            if (
-                !sessionData?.access_token ||
-                !sessionData?.refresh_token
-            ) {
-
-                console.error(
-                    "Invalid phone login response:",
-                    data
-                );
-
-                if (message) {
-                    message.textContent =
-                        "Mobile login failed. Invalid server response.";
-                }
-
-                return;
-            }
-
-
-            const {
-                data: sessionResult,
-                error: sessionError
-            } = await supabase.auth.setSession({
-
-                access_token:
-                    sessionData.access_token,
-
-                refresh_token:
-                    sessionData.refresh_token
-
-            });
-
-
-            if (sessionError) {
-
-                console.error(
-                    "Session error:",
-                    sessionError
-                );
-
-                if (message) {
-                    message.textContent =
-                        sessionError.message;
-                }
-
-                return;
-            }
-
-
-            if (!sessionResult?.user) {
-
-                if (message) {
-                    message.textContent =
-                        "Login failed.";
-                }
-
-                return;
-            }
-
-
-            await openUserDashboard(
-                sessionResult.session
-            );
-
-            return;
-
-        } catch (err) {
-
-            console.error(
-                "Phone login exception:",
-                err
-            );
-
-            if (message) {
-                message.textContent =
-                    "Mobile login failed.";
-            }
-
-            return;
-        }
-    }
-
-
-    // =========================================
-    // EMAIL LOGIN
-    // =========================================
-
-    if (!email) {
-
-        if (message) {
-            message.textContent =
-                "Please enter your email or mobile number.";
-        }
-
-        return;
-    }
-
-
-    if (message) {
         message.textContent =
-            "Logging in...";
+            "Please enter your password.";
+        return;
     }
 
+    message.textContent = "Logging in...";
 
-    const {
-        data,
-        error
-    } = await supabase.auth.signInWithPassword({
+    try {
 
-        email: email,
-
-        password: password
-
-    });
-
-
-    if (error) {
-
-        console.error(
-            "Email login error:",
+        const {
+            data,
             error
+        } = await supabase.functions.invoke(
+            "swift-endpoint",
+            {
+                body: {
+                    phone: phone,
+                    password: password
+                }
+            }
         );
 
-        if (message) {
+        if (error) {
+
+            console.error(
+                "Phone login error:",
+                error
+            );
+
             message.textContent =
-                error.message;
+                "Invalid mobile number or password.";
+
+            return;
         }
 
-        return;
+        console.log(
+            "Phone login response:",
+            data
+        );
+
+        const sessionData =
+            data?.session || data;
+
+        if (
+            !sessionData?.access_token ||
+            !sessionData?.refresh_token
+        ) {
+
+            console.error(
+                "Invalid login response:",
+                data
+            );
+
+            message.textContent =
+                "Login failed. Invalid server response.";
+
+            return;
+        }
+
+        const {
+            data: sessionResult,
+            error: sessionError
+        } = await supabase.auth.setSession({
+
+            access_token:
+                sessionData.access_token,
+
+            refresh_token:
+                sessionData.refresh_token
+
+        });
+
+        if (sessionError) {
+
+            console.error(
+                "Session error:",
+                sessionError
+            );
+
+            message.textContent =
+                "Unable to create login session.";
+
+            return;
+        }
+
+        if (!sessionResult?.user) {
+
+            message.textContent =
+                "Login failed.";
+
+            return;
+        }
+
+        await openUserDashboard(
+            sessionResult.session
+        );
+
+    } catch (err) {
+
+        console.error(
+            "Login exception:",
+            err
+        );
+
+        message.textContent =
+            "Unable to login. Please try again.";
     }
-
-
-    await openUserDashboard(
-        data.session
-    );
 }
-
 
 // =========================================
 // OPEN USER DASHBOARD
