@@ -755,8 +755,6 @@ async function logout() {
 
     }
 }
-
-
 // =========================================
 // ADMIN - LOAD STUDENTS
 // =========================================
@@ -792,13 +790,14 @@ async function loadAdminStudentsForDate() {
 
 
     studentList.innerHTML =
-        "Loading...";
+        `<div class="admin-loading">
+            Loading students...
+        </div>`;
 
 
-    // Only request columns we know exist.
-    // This avoids the previous error caused by
-    // requesting email/phone if those columns
-    // are not present in profiles.
+    // =========================================
+    // LOAD STUDENTS
+    // =========================================
 
     const {
         data: students,
@@ -818,12 +817,18 @@ async function loadAdminStudentsForDate() {
         );
 
         studentList.innerHTML =
-            "Error loading students: " +
-            error.message;
+            `<div class="admin-error">
+                Error loading students:
+                ${error.message}
+            </div>`;
 
         return;
     }
 
+
+    // =========================================
+    // LOAD EXISTING ATTENDANCE
+    // =========================================
 
     const {
         data: attendance,
@@ -842,16 +847,23 @@ async function loadAdminStudentsForDate() {
     if (attendanceError) {
 
         console.error(
+            "Attendance loading error:",
             attendanceError
         );
 
         studentList.innerHTML =
-            "Error loading attendance: " +
-            attendanceError.message;
+            `<div class="admin-error">
+                Error loading attendance:
+                ${attendanceError.message}
+            </div>`;
 
         return;
     }
 
+
+    // =========================================
+    // CREATE ATTENDANCE MAP
+    // =========================================
 
     const attendanceMap = {};
 
@@ -867,20 +879,36 @@ async function loadAdminStudentsForDate() {
     );
 
 
+    // =========================================
+    // NO STUDENTS
+    // =========================================
+
     if (
         !students ||
         students.length === 0
     ) {
 
         studentList.innerHTML =
-            "No students found.";
+            `<div class="admin-empty">
+                No students found.
+            </div>`;
+
+        await loadAdminAbsentees(date);
 
         return;
     }
 
 
+    // =========================================
+    // CLEAR LIST
+    // =========================================
+
     studentList.innerHTML = "";
 
+
+    // =========================================
+    // CREATE STUDENT ROWS
+    // =========================================
 
     students.forEach(
         student => {
@@ -891,28 +919,190 @@ async function loadAdminStudentsForDate() {
                 );
 
             row.className =
-                "student-row";
+                "admin-student-row";
 
 
-            const checked =
+            const studentName =
+                document.createElement(
+                    "div"
+                );
+
+            studentName.className =
+                "admin-student-name";
+
+
+            studentName.textContent =
+                student.name ||
+                "Unnamed Student";
+
+
+            // =====================================
+            // ATTENDANCE OPTIONS
+            // =====================================
+
+            const options =
+                document.createElement(
+                    "div"
+                );
+
+            options.className =
+                "admin-attendance-options";
+
+
+            const existingRecord =
                 attendanceMap[
                     student.id
-                ] === true
-                    ? "checked"
-                    : "";
+                ];
 
 
-            row.innerHTML = `
-                <label>
-                    <input
-                        type="checkbox"
-                        class="admin-attendance-checkbox"
-                        data-user-id="${student.id}"
-                        ${checked}
-                    >
-                    ${student.name || "Unnamed Student"}
-                </label>
-            `;
+            // =====================================
+            // PRESENT
+            // =====================================
+
+            const presentLabel =
+                document.createElement(
+                    "label"
+                );
+
+            presentLabel.className =
+                "admin-status-option present-option";
+
+
+            const presentRadio =
+                document.createElement(
+                    "input"
+                );
+
+            presentRadio.type =
+                "radio";
+
+            presentRadio.name =
+                `attendance_${student.id}`;
+
+            presentRadio.value =
+                "present";
+
+            presentRadio.className =
+                "admin-attendance-radio";
+
+            presentRadio.dataset.userId =
+                student.id;
+
+
+            if (
+                existingRecord === true
+            ) {
+
+                presentRadio.checked =
+                    true;
+
+            }
+
+
+            const presentText =
+                document.createElement(
+                    "span"
+                );
+
+            presentText.textContent =
+                "Present";
+
+
+            presentLabel.appendChild(
+                presentRadio
+            );
+
+            presentLabel.appendChild(
+                presentText
+            );
+
+
+            // =====================================
+            // ABSENT
+            // =====================================
+
+            const absentLabel =
+                document.createElement(
+                    "label"
+                );
+
+            absentLabel.className =
+                "admin-status-option absent-option";
+
+
+            const absentRadio =
+                document.createElement(
+                    "input"
+                );
+
+            absentRadio.type =
+                "radio";
+
+            absentRadio.name =
+                `attendance_${student.id}`;
+
+            absentRadio.value =
+                "absent";
+
+            absentRadio.className =
+                "admin-attendance-radio";
+
+            absentRadio.dataset.userId =
+                student.id;
+
+
+            if (
+                existingRecord === false
+            ) {
+
+                absentRadio.checked =
+                    true;
+
+            }
+
+
+            const absentText =
+                document.createElement(
+                    "span"
+                );
+
+            absentText.textContent =
+                "Absent";
+
+
+            absentLabel.appendChild(
+                absentRadio
+            );
+
+            absentLabel.appendChild(
+                absentText
+            );
+
+
+            // =====================================
+            // ADD OPTIONS
+            // =====================================
+
+            options.appendChild(
+                presentLabel
+            );
+
+            options.appendChild(
+                absentLabel
+            );
+
+
+            // =====================================
+            // ADD ROW
+            // =====================================
+
+            row.appendChild(
+                studentName
+            );
+
+            row.appendChild(
+                options
+            );
 
 
             studentList.appendChild(
@@ -921,8 +1111,15 @@ async function loadAdminStudentsForDate() {
 
         }
     );
-}
 
+
+    // =========================================
+    // LOAD ABSENTEES
+    // =========================================
+
+    await loadAdminAbsentees(date);
+
+}
 
 // =========================================
 // ADMIN - SAVE ATTENDANCE
@@ -941,6 +1138,11 @@ async function saveAttendance() {
         );
 
 
+    if (!dateInput || !message) {
+        return;
+    }
+
+
     const date =
         dateInput.value;
 
@@ -954,16 +1156,85 @@ async function saveAttendance() {
     }
 
 
-    const checkboxes =
+    const radios =
         document.querySelectorAll(
-            ".admin-attendance-checkbox"
+            ".admin-attendance-radio"
         );
 
 
-    if (!checkboxes.length) {
+    if (!radios.length) {
 
         message.textContent =
             "No students available.";
+
+        return;
+    }
+
+
+    // =========================================
+    // COLLECT ONE SELECTION PER STUDENT
+    // =========================================
+
+    const attendanceToSave = {};
+
+    let incomplete =
+        false;
+
+
+    radios.forEach(
+        radio => {
+
+            const userId =
+                radio.dataset.userId;
+
+
+            if (!attendanceToSave[userId]) {
+
+                attendanceToSave[userId] =
+                    null;
+
+            }
+
+
+            if (radio.checked) {
+
+                attendanceToSave[userId] =
+                    radio.value ===
+                    "present";
+
+            }
+
+        }
+    );
+
+
+    // =========================================
+    // CHECK EVERY STUDENT IS MARKED
+    // =========================================
+
+    for (
+        const userId in attendanceToSave
+    ) {
+
+        if (
+            attendanceToSave[userId] ===
+            null
+        ) {
+
+            incomplete =
+                true;
+
+            break;
+
+        }
+
+    }
+
+
+    if (incomplete) {
+
+        message.textContent =
+            "Please mark Present or Absent for every student.";
 
         return;
     }
@@ -973,16 +1244,21 @@ async function saveAttendance() {
         "Saving attendance...";
 
 
+    // =========================================
+    // SAVE EACH STUDENT
+    // =========================================
+
     for (
-        const checkbox of checkboxes
+        const userId in attendanceToSave
     ) {
 
-        const userId =
-            checkbox.dataset.userId;
-
         const present =
-            checkbox.checked;
+            attendanceToSave[userId];
 
+
+        // =====================================
+        // CHECK EXISTING RECORD
+        // =====================================
 
         const {
             data: existing,
@@ -1004,56 +1280,85 @@ async function saveAttendance() {
         if (checkError) {
 
             console.error(
+                "Attendance check error:",
                 checkError
             );
 
-            continue;
+            message.textContent =
+                "Error checking attendance.";
+
+            return;
         }
 
+
+        // =====================================
+        // UPDATE EXISTING
+        // =====================================
 
         if (
             existing &&
             existing.length > 0
         ) {
 
-            const { error } =
-                await supabase
-                    .from("Attendance")
-                    .update({
-                        present:
-                            present
-                    })
-                    .eq(
-                        "id",
-                        existing[0].id
-                    );
+            const {
+                error
+            } = await supabase
+                .from("Attendance")
+                .update({
+                    present:
+                        present
+                })
+                .eq(
+                    "id",
+                    existing[0].id
+                );
 
 
             if (error) {
+
                 console.error(error);
+
+                message.textContent =
+                    "Error updating attendance.";
+
+                return;
             }
 
-        } else {
+        }
 
-            const { error } =
-                await supabase
-                    .from("Attendance")
-                    .insert({
 
-                        user_id:
-                            userId,
+        // =====================================
+        // INSERT NEW
+        // =====================================
 
-                        attendance_date:
-                            date,
+        else {
 
-                        present:
-                            present
+            const {
+                error
+            } = await supabase
+                .from("Attendance")
+                .insert({
 
-                    });
+                    user_id:
+                        userId,
+
+                    attendance_date:
+                        date,
+
+                    present:
+                        present
+
+                });
 
 
             if (error) {
+
                 console.error(error);
+
+                message.textContent =
+                    "Error saving attendance.";
+
+                return;
             }
 
         }
@@ -1061,14 +1366,23 @@ async function saveAttendance() {
     }
 
 
+    // =========================================
+    // SUCCESS
+    // =========================================
+
     message.textContent =
-        "Attendance saved successfully.";
+        "✓ Attendance saved successfully.";
 
 
+    // Refresh student attendance
+    await loadAdminStudentsForDate();
+
+
+    // Refresh history
     await loadAdminAttendance();
+
 }
-
-
+// =========================================
 // =========================================
 // ADMIN - ATTENDANCE HISTORY
 // =========================================
@@ -1087,8 +1401,14 @@ async function loadAdminAttendance() {
 
 
     history.innerHTML =
-        "Loading...";
+        `<div class="admin-loading">
+            Loading attendance history...
+        </div>`;
 
+
+    // =========================================
+    // LOAD ATTENDANCE
+    // =========================================
 
     const {
         data,
@@ -1108,10 +1428,14 @@ async function loadAdminAttendance() {
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            error
+        );
 
         history.innerHTML =
-            "Error loading attendance.";
+            `<div class="admin-error">
+                Error loading attendance.
+            </div>`;
 
         return;
     }
@@ -1123,60 +1447,17 @@ async function loadAdminAttendance() {
     ) {
 
         history.innerHTML =
-            "No attendance records found.";
+            `<div class="admin-empty">
+                No attendance records found.
+            </div>`;
 
         return;
     }
 
 
-    history.innerHTML = "";
-
-
-    data.forEach(record => {
-
-        const row =
-            document.createElement(
-                "div"
-            );
-
-        row.className =
-            "attendance-history-row";
-
-
-        row.textContent =
-            `${record.attendance_date} - ${
-                record.present
-                    ? "Present"
-                    : "Absent"
-            }`;
-
-
-        history.appendChild(row);
-
-    });
-}
-
-
-// =========================================
-// ADMIN - ABSENTEES
-// =========================================
-
-async function loadAdminAbsentees(date) {
-
-    const list =
-        document.getElementById(
-            "adminAbsenteesList"
-        );
-
-
-    if (!list) {
-        return;
-    }
-
-
-    list.innerHTML =
-        "Loading...";
-
+    // =========================================
+    // LOAD STUDENT NAMES
+    // =========================================
 
     const {
         data: students,
@@ -1198,12 +1479,235 @@ async function loadAdminAbsentees(date) {
             studentsError
         );
 
-        list.innerHTML =
-            "Error loading students.";
+        history.innerHTML =
+            `<div class="admin-error">
+                Error loading student names.
+            </div>`;
 
         return;
     }
 
+
+    // =========================================
+    // CREATE NAME MAP
+    // =========================================
+
+    const nameMap = {};
+
+
+    (students || []).forEach(
+        student => {
+
+            nameMap[
+                student.id
+            ] =
+                student.name ||
+                "Unnamed Student";
+
+        }
+    );
+
+
+    // =========================================
+    // CREATE TABLE
+    // =========================================
+
+    const table =
+        document.createElement(
+            "table"
+        );
+
+    table.className =
+        "admin-history-table";
+
+
+    // =========================================
+    // TABLE HEADER
+    // =========================================
+
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Student</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+
+
+    const tbody =
+        table.querySelector(
+            "tbody"
+        );
+
+
+    // =========================================
+    // TABLE ROWS
+    // =========================================
+
+    data.forEach(
+        record => {
+
+            const row =
+                document.createElement(
+                    "tr"
+                );
+
+
+            const dateCell =
+                document.createElement(
+                    "td"
+                );
+
+            const dateObject =
+                new Date(
+                    record.attendance_date +
+                    "T00:00:00"
+                );
+
+
+            dateCell.textContent =
+                dateObject.toLocaleDateString(
+                    "en-IN",
+                    {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                );
+
+
+            const studentCell =
+                document.createElement(
+                    "td"
+                );
+
+            studentCell.textContent =
+                nameMap[
+                    record.user_id
+                ] ||
+                "Unknown Student";
+
+
+            const statusCell =
+                document.createElement(
+                    "td"
+                );
+
+
+            if (
+                record.present === true
+            ) {
+
+                statusCell.textContent =
+                    "✓ Present";
+
+                statusCell.className =
+                    "history-present";
+
+            } else {
+
+                statusCell.textContent =
+                    "✕ Absent";
+
+                statusCell.className =
+                    "history-absent";
+
+            }
+
+
+            row.appendChild(
+                dateCell
+            );
+
+            row.appendChild(
+                studentCell
+            );
+
+            row.appendChild(
+                statusCell
+            );
+
+
+            tbody.appendChild(
+                row
+            );
+
+        }
+    );
+
+
+    history.innerHTML = "";
+
+    history.appendChild(
+        table
+    );
+
+}
+// =========================================
+// ADMIN - ABSENTEES
+// =========================================
+
+async function loadAdminAbsentees(date) {
+
+    const list =
+        document.getElementById(
+            "adminAbsenteesList"
+        );
+
+
+    if (!list) {
+        return;
+    }
+
+
+    list.innerHTML =
+        `<div class="admin-loading">
+            Loading...
+        </div>`;
+
+
+    // =========================================
+    // LOAD STUDENTS
+    // =========================================
+
+    const {
+        data: students,
+        error: studentsError
+    } = await supabase
+        .from("profiles")
+        .select(
+            "id, name"
+        )
+        .eq(
+            "role",
+            "student"
+        )
+        .order(
+            "name"
+        );
+
+
+    if (studentsError) {
+
+        console.error(
+            studentsError
+        );
+
+        list.innerHTML =
+            `<div class="admin-error">
+                Error loading students.
+            </div>`;
+
+        return;
+    }
+
+
+    // =========================================
+    // LOAD ATTENDANCE
+    // =========================================
 
     const {
         data: attendance,
@@ -1226,11 +1730,17 @@ async function loadAdminAbsentees(date) {
         );
 
         list.innerHTML =
-            "Error loading attendance.";
+            `<div class="admin-error">
+                Error loading attendance.
+            </div>`;
 
         return;
     }
 
+
+    // =========================================
+    // CREATE ATTENDANCE MAP
+    // =========================================
 
     const attendanceMap = {};
 
@@ -1246,46 +1756,96 @@ async function loadAdminAbsentees(date) {
     );
 
 
+    // =========================================
+    // ONLY TRUE ABSENTEES
+    // =========================================
+
     const absentees =
         students.filter(
             student =>
                 attendanceMap[
                     student.id
-                ] !== true
+                ] === false
         );
 
+
+    // =========================================
+    // NO ABSENTEES
+    // =========================================
 
     if (
         absentees.length === 0
     ) {
 
         list.innerHTML =
-            "No absentees.";
+            `<div class="admin-no-absentees">
+                ✓ No absentees for this date.
+            </div>`;
 
         return;
     }
 
 
+    // =========================================
+    // DISPLAY ABSENTEES
+    // =========================================
+
     list.innerHTML = "";
 
 
     absentees.forEach(
-        student => {
+        (student, index) => {
 
             const row =
                 document.createElement(
                     "div"
                 );
 
-            row.textContent =
+            row.className =
+                "admin-absentee-row";
+
+
+            const number =
+                document.createElement(
+                    "span"
+                );
+
+            number.className =
+                "admin-absentee-number";
+
+            number.textContent =
+                `${index + 1}.`;
+
+
+            const name =
+                document.createElement(
+                    "span"
+                );
+
+            name.className =
+                "admin-absentee-name";
+
+            name.textContent =
                 student.name ||
                 "Unnamed Student";
 
 
-            list.appendChild(row);
+            row.appendChild(
+                number
+            );
+
+            row.appendChild(
+                name
+            );
+
+
+            list.appendChild(
+                row
+            );
 
         }
     );
+
 }
 // =========================================
 // STUDENT - CHECK SELECTED DATE
