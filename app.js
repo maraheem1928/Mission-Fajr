@@ -1,8 +1,9 @@
+// =========================================
+// SUPABASE CONFIGURATION
+// =========================================
 
 const SUPABASE_URL = "https://mxxmhlkmjndrzpfgtiay.supabase.co";
-
-const SUPABASE_KEY =
-    "sb_publishable_qOsBWh1PK3SXb2-AqAhH8A_XJ5GL4XA";
+const SUPABASE_KEY = "sb_publishable_qOsBWh1PK3SXb2-AqAhH8A_XJ5GL4XA";
 
 const supabase = window.supabase.createClient(
     SUPABASE_URL,
@@ -10,105 +11,30 @@ const supabase = window.supabase.createClient(
 );
 
 
-
 // =========================================
-// PAGE SECTIONS
+// GENERAL SECTION FUNCTIONS
 // =========================================
 
 function hideAllSections() {
-
-    const sections = [
-        "loginSection",
-        "signupSection",
-        "forgotPasswordSection",
-        "resetPasswordSection",
-        "adminDashboard",
-        "studentDashboard"
-    ];
-
-    sections.forEach(id => {
-
-        const element = document.getElementById(id);
-
-        if (element) {
-            element.style.display = "none";
-        }
-
+    document.querySelectorAll(".section").forEach(section => {
+        section.style.display = "none";
     });
-
 }
-
-
-
-// =========================================
-// SHOW LOGIN
-// =========================================
 
 function showLogin() {
-
     hideAllSections();
-
-    const section =
-        document.getElementById("loginSection");
-
-    if (section) {
-        section.style.display = "block";
-    }
-
+    document.getElementById("loginSection").style.display = "block";
 }
-
-
-
-// =========================================
-// SHOW SIGN UP
-// =========================================
 
 function showSignup() {
-
     hideAllSections();
-
-    const section =
-        document.getElementById("signupSection");
-
-    if (section) {
-        section.style.display = "block";
-    }
-
-    const message =
-        document.getElementById("signupMessage");
-
-    if (message) {
-        message.innerText = "";
-    }
-
+    document.getElementById("signupSection").style.display = "block";
 }
-
-
-
-// =========================================
-// SHOW FORGOT PASSWORD
-// =========================================
 
 function showForgotPassword() {
-
     hideAllSections();
-
-    const section =
-        document.getElementById("forgotPasswordSection");
-
-    if (section) {
-        section.style.display = "block";
-    }
-
-    const message =
-        document.getElementById("forgotMessage");
-
-    if (message) {
-        message.innerText = "";
-    }
-
+    document.getElementById("forgotPasswordSection").style.display = "block";
 }
-
 
 
 // =========================================
@@ -117,295 +43,86 @@ function showForgotPassword() {
 
 async function login() {
 
-    const emailInput =
-        document.getElementById("email");
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
 
-    const passwordInput =
-        document.getElementById("password");
+    const message = document.getElementById("loginMessage");
 
-    const message =
-        document.getElementById("message");
+    message.textContent = "";
 
+    if (!email || !password) {
+        message.textContent = "Please enter email and password.";
+        return;
+    }
 
-    if (!emailInput || !passwordInput || !message) {
-        console.error("Login elements are missing.");
+    const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+    });
+
+    if (error) {
+        message.textContent = error.message;
+        return;
+    }
+
+    const user = data.user;
+
+    if (!user) {
+        message.textContent = "Login failed.";
+        return;
+    }
+
+    // Get profile
+    const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("name, role")
+        .eq("id", user.id)
+        .single();
+
+    if (profileError) {
+        message.textContent = "Profile not found.";
+        return;
+    }
+
+    hideAllSections();
+
+    // =========================================
+    // ADMIN LOGIN
+    // =========================================
+
+    if (profile.role === "admin") {
+
+        document.getElementById("adminDashboard").style.display = "block";
+
+        const attendanceDate =
+            document.getElementById("attendanceDate");
+
+        if (attendanceDate) {
+            attendanceDate.value = getLocalDateString();
+        }
+
+        await loadAdminStudentsForDate();
+        await loadAdminAttendance();
+
         return;
     }
 
 
-    const loginValue =
-        emailInput.value.trim();
+    // =========================================
+    // STUDENT LOGIN
+    // =========================================
 
-    const password =
-        passwordInput.value;
+    document.getElementById("studentDashboard").style.display = "block";
 
+    const welcome = document.getElementById("studentWelcome");
 
-    if (loginValue === "" || password === "") {
-
-        message.innerText =
-            "Please enter email/mobile number and password.";
-
-        return;
+    if (welcome) {
+        welcome.textContent =
+            `Welcome, ${profile.name || "Student"}!`;
     }
 
-
-    message.innerText =
-        "Logging in...";
-
-
-    try {
-
-        let userId = null;
-
-
-        // =========================================
-        // EMAIL LOGIN
-        // =========================================
-
-        if (loginValue.includes("@")) {
-
-            const {
-                data: authData,
-                error: authError
-            } = await supabase.auth.signInWithPassword({
-
-                email: loginValue,
-
-                password: password
-
-            });
-
-
-            if (authError) {
-
-                message.innerText =
-                    "Login failed: " +
-                    authError.message;
-
-                return;
-            }
-
-
-            if (!authData || !authData.user) {
-
-                message.innerText =
-                    "Login failed: User not found.";
-
-                return;
-            }
-
-
-            userId =
-                authData.user.id;
-
-        }
-
-
-        // =========================================
-        // MOBILE NUMBER LOGIN
-        // =========================================
-
-        else {
-
-            const {
-                data,
-                error
-            } = await supabase.functions.invoke(
-                "swift-endpoint",
-                {
-                    body: {
-                        phone: loginValue,
-                        password: password
-                    }
-                }
-            );
-
-
-            if (error) {
-
-                console.error(
-                    "Mobile login error:",
-                    error
-                );
-
-                message.innerText =
-                    "Login failed. Please check your mobile number and password.";
-
-                return;
-            }
-
-
-            if (
-                !data ||
-                !data.success ||
-                !data.session
-            ) {
-
-                message.innerText =
-                    data && data.error
-                        ? data.error
-                        : "Login failed. Please check your mobile number and password.";
-
-                return;
-            }
-
-
-            // Set the session returned by Edge Function
-            const {
-                error: sessionError
-            } = await supabase.auth.setSession({
-
-                access_token:
-                    data.session.access_token,
-
-                refresh_token:
-                    data.session.refresh_token
-
-            });
-
-
-            if (sessionError) {
-
-                console.error(
-                    "Session error:",
-                    sessionError
-                );
-
-                message.innerText =
-                    "Login failed. Please try again.";
-
-                return;
-            }
-
-
-            userId =
-                data.session.user.id;
-
-        }
-
-
-
-        // =========================================
-        // GET USER PROFILE
-        // =========================================
-
-        const {
-            data: profile,
-            error: profileError
-        } = await supabase
-            .from("profiles")
-            .select("name, role")
-            .eq("id", userId)
-            .single();
-
-
-        if (profileError) {
-
-            message.innerText =
-                "Profile error: " +
-                profileError.message;
-
-            await supabase.auth.signOut();
-
-            return;
-        }
-
-
-
-        // =========================================
-        // ADMIN
-        // =========================================
-
-        if (profile.role === "admin") {
-
-            hideAllSections();
-
-            const adminDashboard =
-                document.getElementById("adminDashboard");
-
-            if (adminDashboard) {
-                adminDashboard.style.display = "block";
-            }
-
-
-            const dateInput =
-                document.getElementById("attendanceDate");
-
-            if (dateInput) {
-                dateInput.value =
-                    getLocalDateString();
-            }
-
-
-            await loadAdminStudentsForDate();
-
-            await loadAdminAttendance();
-
-            return;
-        }
-
-
-
-        // =========================================
-        // STUDENT
-        // =========================================
-
-        if (profile.role === "student") {
-
-            hideAllSections();
-
-            const studentDashboard =
-                document.getElementById("studentDashboard");
-
-            if (studentDashboard) {
-                studentDashboard.style.display = "block";
-            }
-
-
-            const welcome =
-                document.getElementById("studentWelcome");
-
-
-            if (welcome) {
-
-                welcome.innerText =
-                    "Welcome, " +
-                    profile.name +
-                    "!";
-
-            }
-
-
-            await loadMyAttendance();
-
-            return;
-        }
-
-
-
-        message.innerText =
-            "Unknown role: " +
-            profile.role;
-
-        await supabase.auth.signOut();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Login error:",
-            error
-        );
-
-        message.innerText =
-            "Unexpected error: " +
-            error.message;
-
-    }
-
+    await loadMyAttendance();
 }
-
 
 
 // =========================================
@@ -414,295 +131,91 @@ async function login() {
 
 async function signup() {
 
-    const nameInput =
-        document.getElementById("signupName");
+    const name =
+        document.getElementById("signupName").value.trim();
 
-    const emailInput =
-        document.getElementById("signupEmail");
+    const phone =
+        document.getElementById("signupPhone").value.trim();
 
-    const phoneInput =
-        document.getElementById("signupPhone");
+    const email =
+        document.getElementById("signupEmail").value.trim();
 
-    const passwordInput =
-        document.getElementById("signupPassword");
-
-    const confirmPasswordInput =
-        document.getElementById("signupConfirmPassword");
+    const password =
+        document.getElementById("signupPassword").value;
 
     const message =
         document.getElementById("signupMessage");
 
+    message.textContent = "";
 
-    if (
-        !nameInput ||
-        !emailInput ||
-        !phoneInput ||
-        !passwordInput ||
-        !confirmPasswordInput ||
-        !message
-    ) {
-
-        console.error(
-            "Sign-up elements are missing."
-        );
-
+    if (!name || !phone || !email || !password) {
+        message.textContent = "Please fill all fields.";
         return;
     }
 
+    const { error } = await supabase.auth.signUp({
 
-    const name =
-        nameInput.value.trim();
+        email: email,
 
-    const email =
-        emailInput.value.trim();
+        password: password,
 
-    const phone =
-        phoneInput.value.trim();
+        options: {
+            data: {
+                name: name,
+                phone: phone
+            },
 
-    const password =
-        passwordInput.value;
-
-    const confirmPassword =
-        confirmPasswordInput.value;
-
-
-
-    if (
-        name === "" ||
-        email === "" ||
-        phone === "" ||
-        password === "" ||
-        confirmPassword === ""
-    ) {
-
-        message.innerText =
-            "Please fill in all fields.";
-
-        return;
-    }
-
-
-
-    if (!email.includes("@")) {
-
-        message.innerText =
-            "Please enter a valid email address.";
-
-        return;
-    }
-
-
-
-    if (password !== confirmPassword) {
-
-        message.innerText =
-            "Passwords do not match.";
-
-        return;
-    }
-
-
-
-    if (password.length < 6) {
-
-        message.innerText =
-            "Password must be at least 6 characters.";
-
-        return;
-    }
-
-
-
-    message.innerText =
-        "Creating account...";
-
-
-
-    try {
-
-        /*
-         * The profile is created automatically
-         * by the Supabase database trigger.
-         */
-
-        const {
-            data,
-            error
-        } = await supabase.auth.signUp({
-
-            email: email,
-
-            password: password,
-
-            options: {
-
-                data: {
-                    name: name,
-                    phone: phone
-                },
-
-                emailRedirectTo:
-                    window.location.origin +
-                    window.location.pathname
-
-            }
-
-        });
-
-
-
-        if (error) {
-
-            message.innerText =
-                "Sign up failed: " +
-                error.message;
-
-            return;
+            emailRedirectTo:
+                window.location.origin +
+                window.location.pathname
         }
+    });
 
-
-
-        if (!data || !data.user) {
-
-            message.innerText =
-                "Account creation failed.";
-
-            return;
-        }
-
-
-
-        message.innerText =
-            "Account created successfully. You can now login.";
-
-
-        nameInput.value = "";
-        emailInput.value = "";
-        phoneInput.value = "";
-        passwordInput.value = "";
-        confirmPasswordInput.value = "";
-
+    if (error) {
+        message.textContent = error.message;
+        return;
     }
 
-    catch (error) {
-
-        console.error(
-            "Sign-up error:",
-            error
-        );
-
-        message.innerText =
-            "Unexpected error: " +
-            error.message;
-
-    }
-
+    message.textContent =
+        "Account created successfully. Please check your email if verification is required.";
 }
 
 
-
 // =========================================
-// SEND PASSWORD RECOVERY EMAIL
+// PASSWORD RECOVERY
 // =========================================
 
 async function sendPasswordRecovery() {
 
-    const emailInput =
-        document.getElementById("forgotEmail");
+    const email =
+        document.getElementById("forgotEmail").value.trim();
 
     const message =
         document.getElementById("forgotMessage");
 
+    message.textContent = "";
 
-    if (!emailInput || !message) {
+    if (!email) {
+        message.textContent = "Please enter your email.";
         return;
     }
 
+    const { error } =
+        await supabase.auth.resetPasswordForEmail(email, {
 
-    const email =
-        emailInput.value.trim();
+            redirectTo:
+                window.location.origin +
+                window.location.pathname
+        });
 
-
-
-    if (email === "") {
-
-        message.innerText =
-            "Please enter your email address.";
-
+    if (error) {
+        message.textContent = error.message;
         return;
     }
 
-
-
-    if (!email.includes("@")) {
-
-        message.innerText =
-            "Please enter a valid email address.";
-
-        return;
-    }
-
-
-
-    message.innerText =
-        "Sending recovery email...";
-
-
-
-    try {
-
-        const {
-            error
-        } = await supabase.auth.resetPasswordForEmail(
-
-            email,
-
-            {
-                redirectTo:
-                    window.location.origin +
-                    window.location.pathname
-            }
-
-        );
-
-
-
-        if (error) {
-
-            console.error(
-                "Recovery error:",
-                error
-            );
-
-            message.innerText =
-                "Recovery failed: " +
-                error.message;
-
-            return;
-        }
-
-
-
-        message.innerText =
-            "Recovery email sent. Check your email.";
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Password recovery error:",
-            error
-        );
-
-        message.innerText =
-            "Unexpected error: " +
-            error.message;
-
-    }
-
+    message.textContent =
+        "Password reset link sent to your email.";
 }
-
 
 
 // =========================================
@@ -711,196 +224,58 @@ async function sendPasswordRecovery() {
 
 async function updatePassword() {
 
-    const passwordInput =
-        document.getElementById("newPassword");
-
-    const confirmPasswordInput =
-        document.getElementById("confirmNewPassword");
+    const password =
+        document.getElementById("newPassword").value;
 
     const message =
-        document.getElementById("resetMessage");
+        document.getElementById("resetPasswordMessage");
 
+    message.textContent = "";
 
-
-    if (
-        !passwordInput ||
-        !confirmPasswordInput ||
-        !message
-    ) {
+    if (!password) {
+        message.textContent = "Please enter a new password.";
         return;
     }
 
-
-
-    const newPassword =
-        passwordInput.value;
-
-    const confirmPassword =
-        confirmPasswordInput.value;
-
-
-
-    if (
-        newPassword === "" ||
-        confirmPassword === ""
-    ) {
-
-        message.innerText =
-            "Please enter and confirm your new password.";
-
-        return;
-    }
-
-
-
-    if (newPassword !== confirmPassword) {
-
-        message.innerText =
-            "Passwords do not match.";
-
-        return;
-    }
-
-
-
-    if (newPassword.length < 6) {
-
-        message.innerText =
-            "Password must be at least 6 characters.";
-
-        return;
-    }
-
-
-
-    message.innerText =
-        "Updating password...";
-
-
-
-    try {
-
-        const {
-            data,
-            error
-        } = await supabase.auth.updateUser({
-
-            password: newPassword
-
+    const { error } =
+        await supabase.auth.updateUser({
+            password: password
         });
 
-
-
-        if (error) {
-
-            message.innerText =
-                "Password update failed: " +
-                error.message;
-
-            return;
-        }
-
-
-
-        if (!data || !data.user) {
-
-            message.innerText =
-                "Password update failed.";
-
-            return;
-        }
-
-
-
-        message.innerText =
-            "Password updated successfully!";
-
-
-
-        await supabase.auth.signOut();
-
-
-
-        setTimeout(() => {
-
-            showLogin();
-
-        }, 1500);
-
+    if (error) {
+        message.textContent = error.message;
+        return;
     }
 
-    catch (error) {
+    message.textContent =
+        "Password updated successfully.";
 
-        console.error(
-            "Password update error:",
-            error
-        );
-
-        message.innerText =
-            "Unexpected error: " +
-            error.message;
-
-    }
-
+    setTimeout(() => {
+        showLogin();
+    }, 1500);
 }
 
 
-
 // =========================================
-// PASSWORD RECOVERY SESSION
+// AUTH STATE
 // =========================================
 
-supabase.auth.onAuthStateChange(
-    (event, session) => {
+supabase.auth.onAuthStateChange((event, session) => {
 
-        console.log(
-            "Supabase Auth Event:",
-            event
-        );
+    console.log("Auth event:", event);
 
+    if (event === "PASSWORD_RECOVERY") {
 
+        hideAllSections();
 
-        if (event === "PASSWORD_RECOVERY") {
+        const resetSection =
+            document.getElementById("resetPasswordSection");
 
-            hideAllSections();
-
-
-
-            const resetSection =
-                document.getElementById(
-                    "resetPasswordSection"
-                );
-
-
-
-            if (resetSection) {
-
-                resetSection.style.display =
-                    "block";
-
-            }
-
-
-
-            const resetMessage =
-                document.getElementById(
-                    "resetMessage"
-                );
-
-
-
-            if (resetMessage) {
-
-                resetMessage.innerText =
-                    "Enter your new password.";
-
-            }
-
+        if (resetSection) {
+            resetSection.style.display = "block";
         }
-
     }
-);
-
+});
 
 
 // =========================================
@@ -909,412 +284,146 @@ supabase.auth.onAuthStateChange(
 
 async function logout() {
 
-    try {
-
-        await supabase.auth.signOut();
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Logout error:",
-            error
-        );
-
-    }
-
-
+    await supabase.auth.signOut();
 
     hideAllSections();
 
-
-
-    const loginSection =
-        document.getElementById("loginSection");
-
-
-
-    if (loginSection) {
-        loginSection.style.display = "block";
-    }
-
-
-
-    const message =
-        document.getElementById("message");
-
-
-
-    if (message) {
-        message.innerText = "";
-    }
-
-
-
-    const attendanceMessage =
-        document.getElementById("attendanceMessage");
-
-
-
-    if (attendanceMessage) {
-        attendanceMessage.innerText = "";
-    }
-
-
-
-    const studentMessage =
-        document.getElementById(
-            "studentAttendanceMessage"
-        );
-
-
-
-    if (studentMessage) {
-        studentMessage.innerText = "";
-    }
-
-
-
-    const email =
-        document.getElementById("email");
-
-
-
-    if (email) {
-        email.value = "";
-    }
-
-
-
-    const password =
-        document.getElementById("password");
-
-
-
-    if (password) {
-        password.value = "";
-    }
-
+    document.getElementById("loginSection").style.display =
+        "block";
 }
 
 
-
 // =========================================
-// GET LOCAL DATE
+// LOCAL DATE
 // =========================================
 
-function getLocalDateString() {
+function getLocalDateString(date = new Date()) {
 
-    const now = new Date();
+    const year = date.getFullYear();
 
-    return [
-        now.getFullYear(),
-        String(now.getMonth() + 1).padStart(2, "0"),
-        String(now.getDate()).padStart(2, "0")
-    ].join("-");
+    const month =
+        String(date.getMonth() + 1).padStart(2, "0");
 
+    const day =
+        String(date.getDate()).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
 }
 
 
+// =========================================
+// GET DATE OFFSET
+// =========================================
+
+function getDateOffset(days) {
+
+    const date = new Date();
+
+    date.setDate(date.getDate() + days);
+
+    return getLocalDateString(date);
+}
+
 
 // =========================================
-// LOAD STUDENTS FOR ADMIN + SELECT
+// ADMIN - LOAD STUDENTS
 // =========================================
 
 async function loadAdminStudentsForDate() {
 
-    const studentList =
-        document.getElementById("studentList");
-
     const dateInput =
         document.getElementById("attendanceDate");
 
-    if (!studentList || !dateInput) {
-        return;
-    }
+    const studentList =
+        document.getElementById("studentList");
 
+    if (!dateInput || !studentList) return;
 
+    const date = dateInput.value;
 
-    const date =
-        dateInput.value;
+    if (!date) return;
 
+    studentList.innerHTML = "Loading...";
 
-
-    if (date === "") {
-
-        studentList.innerText =
-            "Please select a date.";
-
-        return;
-    }
-
-
-
-    studentList.innerText =
-        "Loading students...";
-
-
-
-    try {
-
-        const {
-            data: students,
-            error: studentError
-        } = await supabase
+    const { data: students, error } =
+        await supabase
             .from("profiles")
-            .select("id, name")
+            .select("id, name, email, phone")
             .eq("role", "student")
             .order("name");
 
+    if (error) {
 
+        studentList.innerHTML =
+            "Error loading students.";
 
-        if (studentError) {
+        console.error(error);
 
-            console.error(
-                "Student loading error:",
-                studentError
-            );
+        return;
+    }
 
-            studentList.innerText =
-                "Error loading students: " +
-                studentError.message;
-
-            return;
-        }
-
-
-
-        if (
-            !students ||
-            students.length === 0
-        ) {
-
-            studentList.innerText =
-                "No students found.";
-
-            return;
-        }
-
-
-
-        const {
-            data: attendance,
-            error: attendanceError
-        } = await supabase
+    const { data: attendance, error: attendanceError } =
+        await supabase
             .from("Attendance")
-            .select(
-                "user_id, present"
-            )
+            .select("user_id, present")
             .eq("attendance_date", date);
 
+    if (attendanceError) {
 
+        studentList.innerHTML =
+            "Error loading attendance.";
 
-        if (attendanceError) {
+        console.error(attendanceError);
 
-            console.error(
-                "Attendance loading error:",
-                attendanceError
-            );
-
-            studentList.innerText =
-                "Error loading attendance: " +
-                attendanceError.message;
-
-            return;
-        }
-
-
-
-        const attendanceMap = {};
-
-
-
-        (attendance || []).forEach(record => {
-
-            attendanceMap[record.user_id] =
-                record.present;
-
-        });
-
-
-
-        studentList.innerHTML = "";
-
-
-
-        students.forEach(student => {
-
-            const row =
-                document.createElement("div");
-
-            row.className =
-                "admin-student-row";
-
-
-
-            const name =
-                document.createElement("span");
-
-            name.className =
-                "admin-student-name";
-
-            name.innerText =
-                student.name;
-
-
-
-            const controls =
-                document.createElement("div");
-
-            controls.className =
-                "admin-attendance-controls";
-
-
-
-            const presentLabel =
-                document.createElement("label");
-
-            presentLabel.className =
-                "admin-present-option";
-
-
-
-            const presentRadio =
-                document.createElement("input");
-
-            presentRadio.type =
-                "radio";
-
-            presentRadio.name =
-                "attendance_" + student.id;
-
-            presentRadio.value =
-                "present";
-
-            presentRadio.className =
-                "adminAttendanceRadio";
-
-            presentRadio.dataset.userId =
-                student.id;
-
-
-
-            const absentLabel =
-                document.createElement("label");
-
-            absentLabel.className =
-                "admin-absent-option";
-
-
-
-            const absentRadio =
-                document.createElement("input");
-
-            absentRadio.type =
-                "radio";
-
-            absentRadio.name =
-                "attendance_" + student.id;
-
-            absentRadio.value =
-                "absent";
-
-            absentRadio.className =
-                "adminAttendanceRadio";
-
-            absentRadio.dataset.userId =
-                student.id;
-
-
-
-            presentLabel.appendChild(
-                presentRadio
-            );
-
-            presentLabel.appendChild(
-                document.createTextNode(" Present")
-            );
-
-
-
-            absentLabel.appendChild(
-                absentRadio
-            );
-
-            absentLabel.appendChild(
-                document.createTextNode(" Absent")
-            );
-
-
-
-            controls.appendChild(
-                presentLabel
-            );
-
-            controls.appendChild(
-                absentLabel
-            );
-
-
-
-            row.appendChild(name);
-
-            row.appendChild(controls);
-
-            studentList.appendChild(row);
-
-
-
-            if (
-                Object.prototype.hasOwnProperty.call(
-                    attendanceMap,
-                    student.id
-                )
-            ) {
-
-                if (
-                    attendanceMap[student.id] === true
-                ) {
-
-                    presentRadio.checked = true;
-
-                }
-                else {
-
-                    absentRadio.checked = true;
-
-                }
-
-            }
-
-        });
-
-
-
-        await loadAdminAbsentees(date);
-
+        return;
     }
 
-    catch (error) {
+    const attendanceMap = {};
 
-        console.error(
-            "Admin student loading error:",
-            error
-        );
+    attendance.forEach(record => {
+        attendanceMap[record.user_id] = record.present;
+    });
 
-        studentList.innerText =
-            "Unexpected error: " +
-            error.message;
+    if (!students || students.length === 0) {
 
+        studentList.innerHTML =
+            "No students found.";
+
+        return;
     }
 
+    studentList.innerHTML = "";
+
+    students.forEach(student => {
+
+        const row = document.createElement("div");
+
+        row.className = "student-row";
+
+        const checked =
+            attendanceMap[student.id] === true
+                ? "checked"
+                : "";
+
+        row.innerHTML = `
+            <label>
+                <input
+                    type="checkbox"
+                    class="admin-attendance-checkbox"
+                    data-user-id="${student.id}"
+                    ${checked}
+                >
+                ${student.name || "Unnamed Student"}
+            </label>
+        `;
+
+        studentList.appendChild(row);
+    });
 }
 
 
-
 // =========================================
-// SAVE ADMIN ATTENDANCE
+// ADMIN - SAVE ATTENDANCE
 // =========================================
 
 async function saveAttendance() {
@@ -1325,1111 +434,799 @@ async function saveAttendance() {
     const message =
         document.getElementById("attendanceMessage");
 
+    const date = dateInput.value;
 
+    if (!date) {
 
-    if (!dateInput || !message) {
-        return;
-    }
-
-
-
-    const date =
-        dateInput.value;
-
-
-
-    if (date === "") {
-
-        message.innerText =
+        message.textContent =
             "Please select a date.";
 
         return;
     }
 
-
-
-    const studentRows =
+    const checkboxes =
         document.querySelectorAll(
-            ".admin-student-row"
+            ".admin-attendance-checkbox"
         );
 
+    if (!checkboxes.length) {
 
-
-    if (studentRows.length === 0) {
-
-        message.innerText =
-            "No students found.";
+        message.textContent =
+            "No students available.";
 
         return;
     }
 
-
-
-    message.innerText =
+    message.textContent =
         "Saving attendance...";
 
+    for (const checkbox of checkboxes) {
 
+        const userId =
+            checkbox.dataset.userId;
 
-    try {
+        const present =
+            checkbox.checked;
 
-        for (const row of studentRows) {
-
-            const selected =
-                row.querySelector(
-                    'input[type="radio"]:checked'
-                );
-
-
-
-            if (!selected) {
-
-                const studentName =
-                    row.querySelector(
-                        ".admin-student-name"
-                    );
-
-                message.innerText =
-                    "Please select Present or Absent for " +
-                    (
-                        studentName
-                            ? studentName.innerText
-                            : "every student"
-                    ) +
-                    ".";
-
-                return;
-            }
-
-        }
-
-
-
-        for (const row of studentRows) {
-
-            const selected =
-                row.querySelector(
-                    'input[type="radio"]:checked'
-                );
-
-
-
-            const userId =
-                selected.dataset.userId;
-
-
-
-            const present =
-                selected.value === "present";
-
-
-
-            const {
-                data: existing,
-                error: checkError
-            } = await supabase
+        const { data: existing, error: checkError } =
+            await supabase
                 .from("Attendance")
                 .select("id")
                 .eq("user_id", userId)
-                .eq("attendance_date", date);
+                .eq("attendance_date", date)
+                .limit(1);
 
+        if (checkError) {
 
+            console.error(checkError);
 
-            if (checkError) {
+            continue;
+        }
 
-                message.innerText =
-                    "Error checking attendance: " +
-                    checkError.message;
+        if (existing && existing.length > 0) {
 
-                return;
-            }
-
-
-
-            if (
-                existing &&
-                existing.length > 0
-            ) {
-
-                const {
-                    error: updateError
-                } = await supabase
+            const { error } =
+                await supabase
                     .from("Attendance")
                     .update({
                         present: present
                     })
-                    .eq("user_id", userId)
-                    .eq("attendance_date", date);
+                    .eq("id", existing[0].id);
 
-
-
-                if (updateError) {
-
-                    message.innerText =
-                        "Error updating attendance: " +
-                        updateError.message;
-
-                    return;
-                }
-
+            if (error) {
+                console.error(error);
             }
-            else {
 
-                const {
-                    error: insertError
-                } = await supabase
+        } else {
+
+            const { error } =
+                await supabase
                     .from("Attendance")
                     .insert({
-
                         user_id: userId,
-
                         attendance_date: date,
-
                         present: present
-
                     });
 
-
-
-                if (insertError) {
-
-                    message.innerText =
-                        "Error saving attendance: " +
-                        insertError.message;
-
-                    return;
-                }
-
+            if (error) {
+                console.error(error);
             }
-
         }
-
-
-
-        message.innerText =
-            "Attendance saved successfully!";
-
-
-
-        await loadAdminStudentsForDate();
-
-        await loadAdminAttendance();
-
     }
 
-    catch (error) {
+    message.textContent =
+        "Attendance saved successfully.";
 
-        console.error(
-            "Save attendance error:",
-            error
-        );
-
-        message.innerText =
-            "Unexpected error: " +
-            error.message;
-
-    }
-
+    await loadAdminAttendance();
 }
 
 
-
 // =========================================
-// LOAD ADMIN ATTENDANCE HISTORY
+// ADMIN - ATTENDANCE HISTORY
 // =========================================
 
 async function loadAdminAttendance() {
 
-    const adminHistory =
-        document.getElementById(
-            "adminAttendanceHistory"
-        );
+    const history =
+        document.getElementById("adminAttendanceHistory");
 
+    if (!history) return;
 
+    history.innerHTML = "Loading...";
 
-    if (!adminHistory) {
+    const { data, error } =
+        await supabase
+            .from("Attendance")
+            .select("user_id, attendance_date, present")
+            .order("attendance_date", {
+                ascending: false
+            });
+
+    if (error) {
+
+        history.innerHTML =
+            "Error loading attendance.";
+
+        console.error(error);
+
         return;
     }
 
+    if (!data || data.length === 0) {
 
+        history.innerHTML =
+            "No attendance records found.";
 
-    adminHistory.innerText =
-        "Loading attendance...";
-
-
-
-    try {
-
-        const {
-            data: attendance,
-            error
-        } = await supabase
-            .from("Attendance")
-            .select(`
-                id,
-                attendance_date,
-                present,
-                user_id
-            `)
-            .order(
-                "attendance_date",
-                {
-                    ascending: false
-                }
-            );
-
-
-
-        if (error) {
-
-            console.error(
-                "Admin attendance error:",
-                error
-            );
-
-            adminHistory.innerText =
-                "Error loading attendance: " +
-                error.message;
-
-            return;
-        }
-
-
-
-        if (
-            !attendance ||
-            attendance.length === 0
-        ) {
-
-            adminHistory.innerText =
-                "No attendance records found.";
-
-            return;
-        }
-
-
-
-        const {
-            data: students,
-            error: studentError
-        } = await supabase
-            .from("profiles")
-            .select("id, name")
-            .eq("role", "student");
-
-
-
-        if (studentError) {
-
-            adminHistory.innerText =
-                "Error loading student names: " +
-                studentError.message;
-
-            return;
-        }
-
-
-
-        const studentMap = {};
-
-
-
-        (students || []).forEach(student => {
-
-            studentMap[student.id] =
-                student.name;
-
-        });
-
-
-
-        adminHistory.innerHTML = "";
-
-
-
-        attendance.forEach(record => {
-
-            const row =
-                document.createElement("p");
-
-
-
-            const studentName =
-                studentMap[record.user_id] ||
-                "Unknown Student";
-
-
-
-            const status =
-                record.present === true
-                    ? "Present"
-                    : "Absent";
-
-
-
-            row.innerText =
-                record.attendance_date +
-                " — " +
-                studentName +
-                " — " +
-                status;
-
-
-
-            row.className =
-                record.present === true
-                    ? "present-status"
-                    : "absent-status";
-
-
-
-            adminHistory.appendChild(row);
-
-        });
-
+        return;
     }
 
-    catch (error) {
+    history.innerHTML = "";
 
-        console.error(
-            "Admin history error:",
-            error
-        );
+    data.forEach(record => {
 
-        adminHistory.innerText =
-            "Unexpected error: " +
-            error.message;
+        const row = document.createElement("div");
 
-    }
+        row.className = "attendance-history-row";
 
+        row.textContent =
+            `${record.attendance_date} - ${record.present ? "Present" : "Absent"}`;
+
+        history.appendChild(row);
+    });
 }
 
 
-
 // =========================================
-// LOAD ADMIN ABSENTEES
+// ADMIN - ABSENTEES
 // =========================================
 
 async function loadAdminAbsentees(date) {
 
-    const absenteesList =
-        document.getElementById(
-            "adminAbsenteesList"
-        );
+    const list =
+        document.getElementById("adminAbsenteesList");
 
+    if (!list) return;
 
+    list.innerHTML = "Loading...";
 
-    if (!absenteesList) {
-        return;
-    }
-
-
-
-    if (!date) {
-
-        absenteesList.innerText =
-            "Select a date to view absentees.";
-
-        return;
-    }
-
-
-
-    absenteesList.innerText =
-        "Loading absentees...";
-
-
-
-    try {
-
-        const {
-            data: attendance,
-            error
-        } = await supabase
-            .from("Attendance")
-            .select(
-                "user_id, present"
-            )
-            .eq(
-                "attendance_date",
-                date
-            )
-            .eq(
-                "present",
-                false
-            );
-
-
-
-        if (error) {
-
-            absenteesList.innerText =
-                "Error loading absentees: " +
-                error.message;
-
-            return;
-        }
-
-
-
-        if (
-            !attendance ||
-            attendance.length === 0
-        ) {
-
-            absenteesList.innerText =
-                "No absentees for " +
-                date +
-                ".";
-
-            return;
-        }
-
-
-
-        const userIds =
-            attendance.map(
-                record => record.user_id
-            );
-
-
-
-        const {
-            data: students,
-            error: studentError
-        } = await supabase
+    const { data: students, error: studentsError } =
+        await supabase
             .from("profiles")
             .select("id, name")
-            .in("id", userIds);
+            .eq("role", "student");
 
+    if (studentsError) {
 
+        list.innerHTML =
+            "Error loading students.";
 
-        if (studentError) {
-
-            absenteesList.innerText =
-                "Error loading absentee names: " +
-                studentError.message;
-
-            return;
-        }
-
-
-
-        absenteesList.innerHTML = "";
-
-
-
-        (students || []).forEach(student => {
-
-            const row =
-                document.createElement("p");
-
-            row.className =
-                "admin-absentee-row";
-
-            row.innerText =
-                student.name;
-
-            absenteesList.appendChild(row);
-
-        });
-
+        return;
     }
 
-    catch (error) {
+    const { data: attendance, error: attendanceError } =
+        await supabase
+            .from("Attendance")
+            .select("user_id, present")
+            .eq("attendance_date", date);
 
-        console.error(
-            "Absentee loading error:",
-            error
+    if (attendanceError) {
+
+        list.innerHTML =
+            "Error loading attendance.";
+
+        return;
+    }
+
+    const attendanceMap = {};
+
+    attendance.forEach(record => {
+        attendanceMap[record.user_id] = record.present;
+    });
+
+    const absentees =
+        students.filter(student =>
+            attendanceMap[student.id] !== true
         );
 
-        absenteesList.innerText =
-            "Unexpected error: " +
-            error.message;
+    if (absentees.length === 0) {
 
+        list.innerHTML =
+            "No absentees.";
+
+        return;
     }
 
+    list.innerHTML = "";
+
+    absentees.forEach(student => {
+
+        const row =
+            document.createElement("div");
+
+        row.textContent =
+            student.name || "Unnamed Student";
+
+        list.appendChild(row);
+    });
 }
 
 
+// =========================================
+// STUDENT - CHECK SELECTED DATE
+// =========================================
+
+async function checkSelectedAttendanceDate() {
+
+    const dateInput =
+        document.getElementById("studentAttendanceDate");
+
+    const status =
+        document.getElementById("todayAttendanceStatus");
+
+    const presentButton =
+        document.getElementById("studentPresentButton");
+
+    const absentButton =
+        document.getElementById("studentAbsentButton");
+
+    const message =
+        document.getElementById("studentAttendanceMessage");
+
+    if (!dateInput) return;
+
+    const selectedDate =
+        dateInput.value;
+
+    const today =
+        getLocalDateString();
+
+    const yesterday =
+        getDateOffset(-1);
+
+    const dayBeforeYesterday =
+        getDateOffset(-2);
+
+    const allowedDates = [
+        today,
+        yesterday,
+        dayBeforeYesterday
+    ];
+
+    // Reset
+    presentButton.disabled = false;
+    absentButton.disabled = false;
+
+    message.textContent = "";
+
+    if (!selectedDate) {
+
+        status.textContent =
+            "Please select a date.";
+
+        presentButton.disabled = true;
+        absentButton.disabled = true;
+
+        return;
+    }
+
+    // Older or future dates
+    if (!allowedDates.includes(selectedDate)) {
+
+        if (selectedDate > today) {
+
+            status.textContent =
+                "Future dates are not available.";
+
+        } else {
+
+            status.textContent =
+                "Attendance can only be entered for today, yesterday, or the day before yesterday.";
+        }
+
+        presentButton.disabled = true;
+        absentButton.disabled = true;
+
+        return;
+    }
+
+    // Get current user
+    const {
+        data: { user },
+        error: userError
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+
+        status.textContent =
+            "Please login again.";
+
+        presentButton.disabled = true;
+        absentButton.disabled = true;
+
+        return;
+    }
+
+    // Check whether attendance already exists
+    const { data: existing, error } =
+        await supabase
+            .from("Attendance")
+            .select("id, present")
+            .eq("user_id", user.id)
+            .eq("attendance_date", selectedDate)
+            .limit(1);
+
+    if (error) {
+
+        console.error(error);
+
+        status.textContent =
+            "Unable to check attendance.";
+
+        presentButton.disabled = true;
+        absentButton.disabled = true;
+
+        return;
+    }
+
+    if (existing && existing.length > 0) {
+
+        const record = existing[0];
+
+        status.textContent =
+            record.present
+                ? "Present ✓"
+                : "Absent ✕";
+
+        message.textContent =
+            "Attendance already submitted. This record is locked and cannot be changed.";
+
+        // LOCK BUTTONS
+        presentButton.disabled = true;
+        absentButton.disabled = true;
+
+        return;
+    }
+
+    status.textContent =
+        "Not submitted yet.";
+
+    message.textContent =
+        "You can submit attendance for this date.";
+
+    presentButton.disabled = false;
+    absentButton.disabled = false;
+}
+
 
 // =========================================
-// STUDENT ATTENDANCE
+// STUDENT - SUBMIT ATTENDANCE
 // =========================================
 
 async function setMyAttendance(present) {
 
+    const dateInput =
+        document.getElementById("studentAttendanceDate");
+
+    const status =
+        document.getElementById("todayAttendanceStatus");
+
     const message =
-        document.getElementById(
-            "studentAttendanceMessage"
-        );
+        document.getElementById("studentAttendanceMessage");
 
-    const statusElement =
-        document.getElementById(
-            "todayAttendanceStatus"
-        );
+    const presentButton =
+        document.getElementById("studentPresentButton");
 
+    const absentButton =
+        document.getElementById("studentAbsentButton");
 
+    if (!dateInput) return;
 
-    if (!message || !statusElement) {
+    const selectedDate =
+        dateInput.value;
+
+    const today =
+        getLocalDateString();
+
+    const yesterday =
+        getDateOffset(-1);
+
+    const dayBeforeYesterday =
+        getDateOffset(-2);
+
+    const allowedDates = [
+        today,
+        yesterday,
+        dayBeforeYesterday
+    ];
+
+    // Check date
+    if (!allowedDates.includes(selectedDate)) {
+
+        message.textContent =
+            "You can only submit attendance for today, yesterday, or the day before yesterday.";
+
         return;
     }
 
+    // Get logged-in user
+    const {
+        data: { user },
+        error: userError
+    } = await supabase.auth.getUser();
 
+    if (userError || !user) {
 
-    message.innerText =
-        "Saving today's attendance...";
+        message.textContent =
+            "Please login again.";
 
-    message.style.color =
-        "#b8860b";
+        return;
+    }
 
+    message.textContent =
+        "Submitting attendance...";
 
+    // IMPORTANT:
+    // We NEVER UPDATE an existing student record.
+    // If a record exists, it remains locked.
 
-    try {
-
-        const {
-            data: userData,
-            error: userError
-        } = await supabase.auth.getUser();
-
-
-
-        if (
-            userError ||
-            !userData ||
-            !userData.user
-        ) {
-
-            message.innerText =
-                "Please login again.";
-
-            message.style.color =
-                "#cc0000";
-
-            return;
-        }
-
-
-
-        const userId =
-            userData.user.id;
-
-
-
-        const today =
-            getLocalDateString();
-
-
-
-        const {
-            data: existing,
-            error: checkError
-        } = await supabase
+    const { data: existing, error: checkError } =
+        await supabase
             .from("Attendance")
             .select("id, present")
-            .eq("user_id", userId)
-            .eq("attendance_date", today);
+            .eq("user_id", user.id)
+            .eq("attendance_date", selectedDate)
+            .limit(1);
 
+    if (checkError) {
 
+        console.error(checkError);
 
-        if (checkError) {
+        message.textContent =
+            "Unable to check existing attendance.";
 
-            console.error(
-                checkError
-            );
+        return;
+    }
 
-            message.innerText =
-                "Unable to check today's attendance.";
+    if (existing && existing.length > 0) {
 
-            message.style.color =
-                "#cc0000";
+        const record = existing[0];
 
-            return;
-        }
+        status.textContent =
+            record.present
+                ? "Present ✓"
+                : "Absent ✕";
 
+        message.textContent =
+            "Attendance was already submitted and is locked.";
 
-
-        if (
-            existing &&
-            existing.length > 0
-        ) {
-
-            const {
-                error: updateError
-            } = await supabase
-                .from("Attendance")
-                .update({
-                    present: present
-                })
-                .eq("id", existing[0].id)
-                .eq("user_id", userId);
-
-
-
-            if (updateError) {
-
-                console.error(
-                    updateError
-                );
-
-                message.innerText =
-                    "Failed to update today's attendance.";
-
-                message.style.color =
-                    "#cc0000";
-
-                return;
-            }
-
-        }
-
-        else {
-
-            const {
-                error: insertError
-            } = await supabase
-                .from("Attendance")
-                .insert({
-
-                    user_id: userId,
-
-                    attendance_date: today,
-
-                    present: present
-
-                });
-
-
-
-            if (insertError) {
-
-                console.error(
-                    insertError
-                );
-
-                message.innerText =
-                    "Failed to save today's attendance.";
-
-                message.style.color =
-                    "#cc0000";
-
-                return;
-            }
-
-        }
-
-
-
-        if (present) {
-
-            message.innerText =
-                "✓ Today's attendance marked Present.";
-
-            message.style.color =
-                "#008000";
-
-            statusElement.innerText =
-                "Today's Status: Present";
-
-            statusElement.className =
-                "today-present";
-
-        }
-        else {
-
-            message.innerText =
-                "Today's attendance marked Absent.";
-
-            message.style.color =
-                "#cc0000";
-
-            statusElement.innerText =
-                "Today's Status: Absent";
-
-            statusElement.className =
-                "today-absent";
-
-        }
-
-
+        presentButton.disabled = true;
+        absentButton.disabled = true;
 
         await loadMyAttendance();
 
+        return;
     }
 
-    catch (error) {
+    // Insert new attendance
+    const { error: insertError } =
+        await supabase
+            .from("Attendance")
+            .insert({
+                user_id: user.id,
+                attendance_date: selectedDate,
+                present: present
+            });
 
-        console.error(
-            "Student attendance error:",
-            error
-        );
+    if (insertError) {
 
-        message.innerText =
-            "Unexpected error: " +
-            error.message;
+        console.error(insertError);
 
-        message.style.color =
-            "#cc0000";
+        message.textContent =
+            insertError.message;
 
+        return;
     }
 
+    status.textContent =
+        present
+            ? "Present ✓"
+            : "Absent ✕";
+
+    message.textContent =
+        "Attendance submitted successfully. This record is now locked.";
+
+    // LOCK BUTTONS IMMEDIATELY
+    presentButton.disabled = true;
+    absentButton.disabled = true;
+
+    // Reload everything
+    await loadMyAttendance();
 }
 
 
-
 // =========================================
-// LOAD STUDENT ATTENDANCE
+// STUDENT - LOAD ATTENDANCE
 // =========================================
 
 async function loadMyAttendance() {
 
+    const dateInput =
+        document.getElementById("studentAttendanceDate");
+
     const history =
-        document.getElementById(
-            "attendanceHistory"
-        );
+        document.getElementById("attendanceHistory");
 
     const percentage =
-        document.getElementById(
-            "attendancePercentage"
-        );
+        document.getElementById("attendancePercentage");
 
-    const total =
-        document.getElementById(
-            "totalDays"
-        );
+    const totalDays =
+        document.getElementById("totalDays");
 
     const presentDays =
-        document.getElementById(
-            "presentDays"
-        );
+        document.getElementById("presentDays");
 
     const absentDays =
-        document.getElementById(
-            "absentDays"
-        );
+        document.getElementById("absentDays");
 
-    const todayStatus =
-        document.getElementById(
-            "todayAttendanceStatus"
-        );
+    if (!dateInput) return;
 
+    const today =
+        getLocalDateString();
 
+    const minimumDate =
+        getDateOffset(-2);
 
-    if (
-        !history ||
-        !percentage ||
-        !total ||
-        !presentDays ||
-        !absentDays
-    ) {
+    // Date picker restrictions
+    dateInput.min = minimumDate;
+    dateInput.max = today;
+
+    // If no date selected, use today
+    if (!dateInput.value) {
+        dateInput.value = today;
+    }
+
+    const {
+        data: { user },
+        error: userError
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
         return;
     }
 
+    // =========================================
+    // LOAD ALL USER ATTENDANCE
+    // =========================================
 
-
-    history.innerText =
-        "Loading attendance...";
-
-
-
-    try {
-
-        const {
-            data: userData,
-            error: userError
-        } = await supabase.auth.getUser();
-
-
-
-        if (
-            userError ||
-            !userData ||
-            !userData.user
-        ) {
-
-            history.innerText =
-                "Unable to get student information.";
-
-            return;
-        }
-
-
-
-        const userId =
-            userData.user.id;
-
-
-
-        const {
-            data: attendance,
-            error
-        } = await supabase
+    const { data, error } =
+        await supabase
             .from("Attendance")
-            .select(
-                "attendance_date, present"
-            )
-            .eq("user_id", userId)
-            .order(
-                "attendance_date",
-                {
-                    ascending: false
-                }
-            );
+            .select("id, attendance_date, present")
+            .eq("user_id", user.id)
+            .order("attendance_date", {
+                ascending: false
+            });
 
+    if (error) {
 
+        console.error(error);
 
-        if (error) {
-
-            history.innerText =
-                "Error loading attendance: " +
-                error.message;
-
-            return;
+        if (history) {
+            history.innerHTML =
+                "Error loading attendance.";
         }
 
+        return;
+    }
 
+    const records = data || [];
 
-        const records =
-            attendance || [];
+    const attendanceMap = {};
 
+    records.forEach(record => {
 
-
-        // =========================================
-        // TODAY'S STATUS
-        // =========================================
-
-        const today =
-            getLocalDateString();
-
-
-
-        const todayRecord =
-            records.find(
-                record =>
-                    record.attendance_date === today
-            );
-
-
-
-        if (todayStatus) {
-
-            if (!todayRecord) {
-
-                todayStatus.innerText =
-                    "Today's Status: Not Marked";
-
-                todayStatus.className =
-                    "today-not-marked";
-
-            }
-            else if (
-                todayRecord.present === true
-            ) {
-
-                todayStatus.innerText =
-                    "Today's Status: Present";
-
-                todayStatus.className =
-                    "today-present";
-
-            }
-            else {
-
-                todayStatus.innerText =
-                    "Today's Status: Absent";
-
-                todayStatus.className =
-                    "today-absent";
-
-            }
-
+        // Keep the first record if duplicates somehow exist
+        if (!attendanceMap[record.attendance_date]) {
+            attendanceMap[record.attendance_date] = record;
         }
+    });
 
 
+    // =========================================
+    // MONTHLY SUMMARY
+    // =========================================
 
-        // =========================================
-        // CURRENT MONTH
-        // =========================================
+    const now = new Date();
 
-        const now =
-            new Date();
+    const currentYear =
+        now.getFullYear();
 
-        const currentYear =
-            now.getFullYear();
+    const currentMonth =
+        now.getMonth();
 
-        const currentMonth =
-            String(
-                now.getMonth() + 1
-            ).padStart(2, "0");
+    const monthRecords =
+        records.filter(record => {
 
+            const date =
+                new Date(record.attendance_date + "T00:00:00");
 
-
-        const monthStart =
-            currentYear +
-            "-" +
-            currentMonth +
-            "-01";
-
-
-
-        const nextMonth =
-            new Date(
-                currentYear,
-                now.getMonth() + 1,
-                1
+            return (
+                date.getFullYear() === currentYear &&
+                date.getMonth() === currentMonth
             );
-
-
-
-        const nextMonthStart =
-            nextMonth.getFullYear() +
-            "-" +
-            String(
-                nextMonth.getMonth() + 1
-            ).padStart(2, "0") +
-            "-01";
-
-
-
-        const monthRecords =
-            records.filter(
-                record =>
-                    record.attendance_date >= monthStart &&
-                    record.attendance_date < nextMonthStart
-            );
-
-
-
-        const totalCount =
-            monthRecords.length;
-
-
-
-        let presentCount = 0;
-
-
-
-        monthRecords.forEach(record => {
-
-            if (record.present === true) {
-                presentCount++;
-            }
-
         });
 
+    const totalRecorded =
+        monthRecords.length;
 
+    const presentCount =
+        monthRecords.filter(
+            record => record.present === true
+        ).length;
 
-        const absentCount =
-            totalCount -
+    const absentCount =
+        monthRecords.filter(
+            record => record.present === false
+        ).length;
+
+    const attendancePercentageValue =
+        totalRecorded > 0
+            ? Math.round(
+                (presentCount / totalRecorded) * 100
+            )
+            : 0;
+
+    if (percentage) {
+        percentage.textContent =
+            `${attendancePercentageValue}%`;
+    }
+
+    if (totalDays) {
+        totalDays.textContent =
+            totalRecorded;
+    }
+
+    if (presentDays) {
+        presentDays.textContent =
             presentCount;
+    }
 
-
-
-        const attendancePercentage =
-            totalCount === 0
-                ? 0
-                : (
-                    presentCount /
-                    totalCount
-                ) * 100;
-
-
-
-        total.innerText =
-            "Total Days: " +
-            totalCount;
-
-
-
-        presentDays.innerText =
-            "Present: " +
-            presentCount;
-
-
-
-        absentDays.innerText =
-            "Absent: " +
+    if (absentDays) {
+        absentDays.textContent =
             absentCount;
+    }
 
 
+    // =========================================
+    // WHOLE CURRENT MONTH
+    // =========================================
 
-        percentage.innerText =
-            "Attendance: " +
-            attendancePercentage.toFixed(1) +
-            "%";
-
-
-
-        // =========================================
-        // DAILY HISTORY
-        // =========================================
-
-        if (records.length === 0) {
-
-            history.innerText =
-                "No attendance records found.";
-
-            return;
-        }
-
-
+    if (history) {
 
         history.innerHTML = "";
 
+        const firstDay =
+            new Date(
+                currentYear,
+                currentMonth,
+                1
+            );
+
+        const lastDay =
+            new Date(
+                currentYear,
+                currentMonth + 1,
+                0
+            );
+
+        const monthTitle =
+            document.createElement("h3");
+
+        monthTitle.textContent =
+            firstDay.toLocaleString(
+                "en-US",
+                {
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+        history.appendChild(monthTitle);
 
 
-        records.forEach(record => {
+        for (
+            let day = 1;
+            day <= lastDay.getDate();
+            day++
+        ) {
+
+            const date =
+                new Date(
+                    currentYear,
+                    currentMonth,
+                    day
+                );
+
+            const dateString =
+                getLocalDateString(date);
+
+            const record =
+                attendanceMap[dateString];
 
             const row =
-                document.createElement("p");
-
-
-
-            const status =
-                record.present === true
-                    ? "Present"
-                    : "Absent";
-
-
-
-            row.innerText =
-                record.attendance_date +
-                " — " +
-                status;
-
-
+                document.createElement("div");
 
             row.className =
-                record.present === true
-                    ? "present-status"
-                    : "absent-status";
+                "student-month-row";
 
+            const dateText =
+                date.toLocaleDateString(
+                    "en-IN",
+                    {
+                        weekday: "short",
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric"
+                    }
+                );
 
+            let statusText = "";
+
+            if (dateString > today) {
+
+                statusText =
+                    "— Future";
+
+            } else if (record) {
+
+                statusText =
+                    record.present
+                        ? "✓ Present 🔒"
+                        : "✕ Absent 🔒";
+
+            } else {
+
+                const dateDifference =
+                    Math.round(
+                        (
+                            new Date(today + "T00:00:00") -
+                            new Date(dateString + "T00:00:00")
+                        ) / (1000 * 60 * 60 * 24)
+                    );
+
+                if (dateDifference >= 0 &&
+                    dateDifference <= 2) {
+
+                    statusText =
+                        "— Available to enter";
+
+                } else {
+
+                    statusText =
+                        "— Not submitted 🔒";
+                }
+            }
+
+            row.innerHTML = `
+                <span>${dateText}</span>
+                <span>${statusText}</span>
+            `;
 
             history.appendChild(row);
-
-        });
-
+        }
     }
 
-    catch (error) {
 
-        console.error(
-            "Student attendance loading error:",
-            error
-        );
+    // =========================================
+    // UPDATE SELECTED DATE STATUS
+    // =========================================
 
-        history.innerText =
-            "Unexpected error: " +
-            error.message;
-
-    }
-
+    await checkSelectedAttendanceDate();
 }
 
 
-
 // =========================================
-// INITIAL PAGE
+// PAGE LOAD
 // =========================================
 
 document.addEventListener(
@@ -2437,7 +1234,7 @@ document.addEventListener(
     () => {
 
         console.log(
-            "Mission Fajr JavaScript loaded successfully."
+            "Mission Fajr loaded successfully."
         );
 
     }
