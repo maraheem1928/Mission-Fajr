@@ -3250,3 +3250,32 @@ document.addEventListener(
 
     }
 );
+// =========================================
+// MISSION FAJR - PWA SERVICE WORKER
+// =========================================
+
+if ("serviceWorker" in navigator) {
+
+    window.addEventListener("load", () => {
+
+        navigator.serviceWorker
+            .register("./service-worker.js")
+            .then(() => {
+
+                console.log(
+                    "Mission Fajr service worker registered."
+                );
+
+            })
+            .catch(error => {
+
+                console.error(
+                    "Service worker registration failed:",
+                    error
+                );
+
+            });
+
+    });
+
+}
