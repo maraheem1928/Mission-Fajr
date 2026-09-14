@@ -1427,6 +1427,22 @@ button:active {
         font-size: 13px;
         margin-bottom: 6px;
     }
+    .attendance-percentage-card {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.attendance-percentage-value {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+    line-height: 1.2 !important;
+    margin-top: 8px !important;
+}
 
     .attendance-day-status {
         font-size: 17px;
