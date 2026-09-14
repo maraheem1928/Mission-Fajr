@@ -1104,36 +1104,38 @@ button:active {
         gap: 10px;
     }
 }    
-    /* =========================================
-   STUDENT ATTENDANCE CALENDAR
+/* =========================================
+   MISSION FAJR - ATTENDANCE CALENDAR
    ========================================= */
 
 .attendance-section {
-    background: white;
-    border-radius: 20px;
-    padding: 24px;
-    margin-top: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    box-sizing: border-box;
 }
 
-/* Attendance Header */
+
+/* =========================================
+   HEADER
+   ========================================= */
 
 .attendance-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 22px;
 }
 
 .attendance-header h2 {
-    margin-bottom: 4px !important;
+    margin: 0;
+    font-size: 22px;
 }
 
-#attendanceMonthTitle {
-    color: #718078;
+.attendance-header h3 {
+    margin: 0;
     font-size: 15px;
     font-weight: 600;
 }
+
 
 /* =========================================
    SUMMARY CARDS
@@ -1147,42 +1149,45 @@ button:active {
 }
 
 .attendance-card {
-    background: #f7faf8;
-    border: 1px solid #e4ebe7;
-    border-radius: 15px;
-    padding: 16px;
+    min-height: 82px;
+    padding: 12px 8px;
+
+    background: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 14px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
     text-align: center;
+    box-sizing: border-box;
 }
 
 .attendance-card-title {
-    display: block;
-    color: #718078;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 700;
     margin-bottom: 7px;
 }
 
 .attendance-card strong {
-    display: block;
-    font-size: 25px;
-    color: #30483d;
+    display: block !important;
+    font-size: 25px !important;
+    font-weight: 800 !important;
+    line-height: 1 !important;
 }
 
-.attendance-card:nth-child(1) strong {
-    color: #08752f;
+
+/* Make percentage clearly visible */
+
+#attendancePercentage {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    font-size: 25px !important;
 }
 
-.attendance-card:nth-child(2) strong {
-    color: #cc0000;
-}
-
-.attendance-card:nth-child(3) strong {
-    color: #444444;
-}
-
-.attendance-card:nth-child(4) strong {
-    color: #b07b16;
-}
 
 /* =========================================
    CALENDAR
@@ -1190,391 +1195,84 @@ button:active {
 
 .attendance-calendar-container {
     width: 100%;
-    overflow: hidden;
-    border: 1px solid #e4ebe7;
-    border-radius: 16px;
+    box-sizing: border-box;
 }
+
+
+/* Week names */
 
 .calendar-weekdays {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    background: #f3f7f4;
-    border-bottom: 1px solid #e4ebe7;
-}
-
-.calendar-weekdays div {
-    text-align: center;
-    padding: 12px 5px;
-    font-size: 13px;
-    font-weight: 800;
-    color: #40564b;
-}
-
-.attendance-calendar {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-}
-
-/* Individual Day */
-
-.attendance-day {
-    min-height: 75px;
-    padding: 8px;
-    border-right: 1px solid #edf1ee;
-    border-bottom: 1px solid #edf1ee;
-    background: white;
-    cursor: pointer;
-    transition:
-        background 0.15s ease,
-        transform 0.15s ease;
-}
-
-.attendance-day:hover {
-    background: #f7faf8;
-    transform: scale(1.02);
-}
-
-.attendance-day-number {
-    font-size: 14px;
-    font-weight: 800;
-    color: #30483d;
-}
-
-.attendance-day-status {
-    margin-top: 8px;
-    font-size: 20px;
-    text-align: center;
-}
-
-/* Empty Calendar Cell */
-
-.attendance-empty-day {
-    min-height: 75px;
-    background: #fafbfa;
-    border-right: 1px solid #edf1ee;
-    border-bottom: 1px solid #edf1ee;
-}
-
-/* =========================================
-   DAY STATUS
-   ========================================= */
-
-.attendance-day.present {
-    background: #edf9f1;
-}
-
-.attendance-day.absent {
-    background: #fff0f0;
-}
-
-.attendance-day.not-submitted {
-    background: #f3f3f3;
-}
-
-.attendance-day.future {
-    background: #fafafa;
-    cursor: default;
-    opacity: 0.65;
-}
-
-.attendance-day.future:hover {
-    transform: none;
-    background: #fafafa;
-}
-
-.attendance-day.today {
-    outline: 3px solid #d4af37;
-    outline-offset: -3px;
-}
-
-.attendance-day.locked {
-    cursor: default;
-}
-
-.attendance-day.locked:hover {
-    transform: none;
-}
-
-/* =========================================
-   LEGEND
-   ========================================= */
-
-.attendance-legend {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 18px;
-    padding: 12px;
-    background: #f7faf8;
-    border-radius: 12px;
-    color: #40564b;
-    font-size: 13px;
-    font-weight: 700;
-}
-
-/* =========================================
-   ATTENDANCE ENTRY BOX
-   ========================================= */
-
-.attendance-entry-box {
-    margin-top: 20px;
-    padding: 20px;
-    border-radius: 16px;
-    background: linear-gradient(
-        135deg,
-        #f7faf8,
-        #ffffff
-    );
-    border: 1px solid #e1e9e4;
-    text-align: center;
-}
-
-#selectedAttendanceDate {
-    color: #30483d !important;
-    margin-bottom: 10px;
-}
-
-#attendanceEntryBox #todayAttendanceStatus {
-    margin-bottom: 15px;
-}
-
-.attendance-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-}
-
-#studentPresentButton,
-#studentAbsentButton {
-    min-width: 150px;
-}
-
-#studentPresentButton {
-    background: linear-gradient(
-        135deg,
-        #16803c,
-        #086b2e
-    );
-}
-
-#studentAbsentButton {
-    background: linear-gradient(
-        135deg,
-        #dc3545,
-        #b02a37
-    );
-}
-
-/* =========================================
-   MOBILE ATTENDANCE
-   ========================================= */
-
-@media (max-width: 600px) {
-
-    .attendance-section {
-        padding: 15px;
-        border-radius: 16px;
-    }
-
-    .attendance-summary {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-    }
-
-    .attendance-card {
-        padding: 13px;
-    }
-
-    .attendance-card strong {
-        font-size: 22px;
-    }
-
-    .calendar-weekdays div {
-        font-size: 11px;
-        padding: 10px 2px;
-    }
-
-    .attendance-day,
-    .attendance-empty-day {
-        min-height: 58px;
-        padding: 5px;
-    }
-
-    .attendance-day-number {
-        font-size: 12px;
-    }
-
-    .attendance-day-status {
-        font-size: 16px;
-        margin-top: 5px;
-    }
-
-    .attendance-legend {
-        gap: 8px;
-        font-size: 11px;
-    }
-
-    .attendance-buttons {
-        flex-direction: column;
-    }
-
-    #studentPresentButton,
-    #studentAbsentButton {
-        width: 100%;
-    }
-}
-/* =========================================
-   STUDENT ATTENDANCE CALENDAR
-   ========================================= */
-
-.attendance-section {
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.attendance-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-}
-
-.attendance-header h2 {
-    margin: 0;
-}
-
-.attendance-header h3 {
-    margin: 0;
-}
-
-
-/* =========================================
-   ATTENDANCE SUMMARY
-   ========================================= */
-
-.attendance-summary {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 28px;
-}
-
-.attendance-card {
-    min-height: 90px;
-    padding: 16px;
-    border-radius: 14px;
-    background: #ffffff;
-    border: 1px solid #e1e5ea;
-    box-sizing: border-box;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-}
-
-.attendance-card-title {
-    display: block;
-    font-size: 14px;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.attendance-card strong {
-    display: block !important;
-    font-size: 28px;
-    line-height: 1.2;
-}
-
-
-/* =========================================
-   CALENDAR CONTAINER
-   ========================================= */
-
-.attendance-calendar-container {
-    width: 100%;
-    overflow-x: auto;
-    box-sizing: border-box;
-}
-
-
-/* =========================================
-   WEEKDAY HEADER
-   ========================================= */
-
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
-    margin-bottom: 8px;
-}
-
-.calendar-weekdays div {
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 4px;
-}
-
-
-/* =========================================
-   CALENDAR GRID
-   ========================================= */
-
-.attendance-calendar {
-    display: grid !important;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
-    width: 100%;
-}
-
-
-/* =========================================
-   EMPTY DAYS
-   ========================================= */
-
-.attendance-empty-day {
-    min-height: 72px;
-}
-
-
-/* =========================================
-   NORMAL DAY CELL
-   ========================================= */
-
-.attendance-day {
-    min-height: 72px;
-
-    padding: 10px 6px;
-
-    border: 1px solid #e1e5ea;
-    border-radius: 12px;
-
-    background: #ffffff;
-
-    box-sizing: border-box;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    text-align: center;
-
-    transition: transform 0.15s ease;
-}
-
-.attendance-day-number {
-    font-size: 17px;
-    font-weight: 700;
+    gap: 7px;
     margin-bottom: 7px;
 }
 
+.calendar-weekdays div {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    padding: 8px 2px;
+}
+
+
+/* Calendar grid */
+
+.attendance-calendar {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 7px !important;
+    width: 100%;
+}
+
+
+/* =========================================
+   EMPTY CELLS
+   ========================================= */
+
+.attendance-empty-day {
+    height: 70px;
+}
+
+
+/* =========================================
+   DAY BOX
+   ========================================= */
+
+.attendance-day {
+    height: 70px;
+    min-width: 0;
+
+    border-radius: 11px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    box-sizing: border-box;
+
+    background: rgba(255, 255, 255, 0.7);
+}
+
+
+/* Date number */
+
+.attendance-day-number {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+
+/* Status symbol */
+
 .attendance-day-status {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 21px;
+    font-weight: 900;
+    line-height: 1;
 }
 
 
@@ -1583,8 +1281,8 @@ button:active {
    ========================================= */
 
 .attendance-day.present {
-    background: #e9f8ef;
-    border-color: #39a866;
+    background: #eaf8ef;
+    border: 1px solid #72c994;
 }
 
 .attendance-day.present .attendance-day-status {
@@ -1597,8 +1295,8 @@ button:active {
    ========================================= */
 
 .attendance-day.absent {
-    background: #fdebed;
-    border-color: #df5263;
+    background: #fff0f2;
+    border: 1px solid #e28a97;
 }
 
 .attendance-day.absent .attendance-day-status {
@@ -1611,12 +1309,12 @@ button:active {
    ========================================= */
 
 .attendance-day.not-recorded {
-    background: #f5f6f8;
-    border-color: #d9dde3;
+    background: #f7f7f7;
+    border: 1px solid #e2e2e2;
 }
 
 .attendance-day.not-recorded .attendance-day-status {
-    color: #89919d;
+    color: #a5a5a5;
 }
 
 
@@ -1625,9 +1323,12 @@ button:active {
    ========================================= */
 
 .attendance-day.future {
-    background: #fafafa;
-    border-color: #eeeeee;
-    opacity: 0.6;
+    background: #f2f3f5;
+    border: 1px solid #e8e8e8;
+}
+
+.attendance-day.future .attendance-day-status {
+    color: #c2c2c2;
 }
 
 
@@ -1636,7 +1337,7 @@ button:active {
    ========================================= */
 
 .attendance-day.today {
-    box-shadow: 0 0 0 2px #d4af37 inset;
+    box-shadow: inset 0 0 0 2px #c9a227;
 }
 
 
@@ -1647,23 +1348,27 @@ button:active {
 .attendance-legend {
     display: flex;
     justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 20px;
+
+    gap: 18px;
     margin-top: 18px;
-    font-size: 13px;
+
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .attendance-legend > div {
     display: flex;
     align-items: center;
-    gap: 7px;
+    gap: 6px;
 }
 
 .legend-present,
 .legend-absent,
 .legend-not-recorded {
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     border-radius: 50%;
     display: inline-block;
 }
@@ -1689,6 +1394,16 @@ button:active {
 
     .attendance-summary {
         grid-template-columns: repeat(2, 1fr);
+        gap: 9px;
+    }
+
+    .attendance-card {
+        min-height: 75px;
+    }
+
+    .attendance-card strong,
+    #attendancePercentage {
+        font-size: 22px !important;
     }
 
     .calendar-weekdays {
@@ -1696,21 +1411,25 @@ button:active {
     }
 
     .attendance-calendar {
-        gap: 4px;
+        gap: 4px !important;
     }
 
     .attendance-day {
-        min-height: 60px;
-        padding: 7px 3px;
+        height: 58px;
         border-radius: 8px;
     }
 
+    .attendance-empty-day {
+        height: 58px;
+    }
+
     .attendance-day-number {
-        font-size: 14px;
+        font-size: 13px;
+        margin-bottom: 6px;
     }
 
     .attendance-day-status {
-        font-size: 15px;
+        font-size: 17px;
     }
 
 }
