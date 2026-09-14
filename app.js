@@ -3,11 +3,20 @@
 // =========================================
 
 const SUPABASE_URL = "https://mxxmhlkmjndrzpfgtiay.supabase.co";
-const SUPABASE_KEY = "sb_publishable_qOsBWh1PK3SXb2-AqAhH8A_XJ5GL4XA";
+
+const SUPABASE_KEY =
+    "sb_publishable_qOsBWh1PK3SXb2-AqAhH8A_XJ5GL4XA";
 
 const supabase = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY
+    SUPABASE_KEY,
+    {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+        }
+    }
 );
 
 
@@ -21,291 +30,55 @@ function hideAllSections() {
     });
 }
 
+
 function showLogin() {
     hideAllSections();
-    document.getElementById("loginSection").style.display = "block";
+
+    const section = document.getElementById("loginSection");
+
+    if (section) {
+        section.style.display = "block";
+    }
 }
+
 
 function showSignup() {
     hideAllSections();
-    document.getElementById("signupSection").style.display = "block";
+
+    const section = document.getElementById("signupSection");
+
+    if (section) {
+        section.style.display = "block";
+    }
 }
+
 
 function showForgotPassword() {
     hideAllSections();
-    document.getElementById("forgotPasswordSection").style.display = "block";
+
+    const section = document.getElementById("forgotPasswordSection");
+
+    if (section) {
+        section.style.display = "block";
+    }
 }
 
 
 // =========================================
-// LOGIN
-// =========================================
-
-async function login() {
-
-    const email = document.getElementById("loginEmail").value.trim();
-    const password = document.getElementById("loginPassword").value;
-
-    const message = document.getElementById("loginMessage");
-
-    message.textContent = "";
-
-    if (!email || !password) {
-        message.textContent = "Please enter email and password.";
-        return;
-    }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
-        password: password
-    });
-
-    if (error) {
-        message.textContent = error.message;
-        return;
-    }
-
-    const user = data.user;
-
-    if (!user) {
-        message.textContent = "Login failed.";
-        return;
-    }
-
-    // Get profile
-    const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("name, role")
-        .eq("id", user.id)
-        .single();
-
-    if (profileError) {
-        message.textContent = "Profile not found.";
-        return;
-    }
-
-    hideAllSections();
-
-    // =========================================
-    // ADMIN LOGIN
-    // =========================================
-
-    if (profile.role === "admin") {
-
-        document.getElementById("adminDashboard").style.display = "block";
-
-        const attendanceDate =
-            document.getElementById("attendanceDate");
-
-        if (attendanceDate) {
-            attendanceDate.value = getLocalDateString();
-        }
-
-        await loadAdminStudentsForDate();
-        await loadAdminAttendance();
-
-        return;
-    }
-
-
-    // =========================================
-    // STUDENT LOGIN
-    // =========================================
-
-    document.getElementById("studentDashboard").style.display = "block";
-
-    const welcome = document.getElementById("studentWelcome");
-
-    if (welcome) {
-        welcome.textContent =
-            `Welcome, ${profile.name || "Student"}!`;
-    }
-
-    await loadMyAttendance();
-}
-
-
-// =========================================
-// SIGN UP
-// =========================================
-
-async function signup() {
-
-    const name =
-        document.getElementById("signupName").value.trim();
-
-    const phone =
-        document.getElementById("signupPhone").value.trim();
-
-    const email =
-        document.getElementById("signupEmail").value.trim();
-
-    const password =
-        document.getElementById("signupPassword").value;
-
-    const message =
-        document.getElementById("signupMessage");
-
-    message.textContent = "";
-
-    if (!name || !phone || !email || !password) {
-        message.textContent = "Please fill all fields.";
-        return;
-    }
-
-    const { error } = await supabase.auth.signUp({
-
-        email: email,
-
-        password: password,
-
-        options: {
-            data: {
-                name: name,
-                phone: phone
-            },
-
-            emailRedirectTo:
-                window.location.origin +
-                window.location.pathname
-        }
-    });
-
-    if (error) {
-        message.textContent = error.message;
-        return;
-    }
-
-    message.textContent =
-        "Account created successfully. Please check your email if verification is required.";
-}
-
-
-// =========================================
-// PASSWORD RECOVERY
-// =========================================
-
-async function sendPasswordRecovery() {
-
-    const email =
-        document.getElementById("forgotEmail").value.trim();
-
-    const message =
-        document.getElementById("forgotMessage");
-
-    message.textContent = "";
-
-    if (!email) {
-        message.textContent = "Please enter your email.";
-        return;
-    }
-
-    const { error } =
-        await supabase.auth.resetPasswordForEmail(email, {
-
-            redirectTo:
-                window.location.origin +
-                window.location.pathname
-        });
-
-    if (error) {
-        message.textContent = error.message;
-        return;
-    }
-
-    message.textContent =
-        "Password reset link sent to your email.";
-}
-
-
-// =========================================
-// UPDATE PASSWORD
-// =========================================
-
-async function updatePassword() {
-
-    const password =
-        document.getElementById("newPassword").value;
-
-    const message =
-        document.getElementById("resetPasswordMessage");
-
-    message.textContent = "";
-
-    if (!password) {
-        message.textContent = "Please enter a new password.";
-        return;
-    }
-
-    const { error } =
-        await supabase.auth.updateUser({
-            password: password
-        });
-
-    if (error) {
-        message.textContent = error.message;
-        return;
-    }
-
-    message.textContent =
-        "Password updated successfully.";
-
-    setTimeout(() => {
-        showLogin();
-    }, 1500);
-}
-
-
-// =========================================
-// AUTH STATE
-// =========================================
-
-supabase.auth.onAuthStateChange((event, session) => {
-
-    console.log("Auth event:", event);
-
-    if (event === "PASSWORD_RECOVERY") {
-
-        hideAllSections();
-
-        const resetSection =
-            document.getElementById("resetPasswordSection");
-
-        if (resetSection) {
-            resetSection.style.display = "block";
-        }
-    }
-});
-
-
-// =========================================
-// LOGOUT
-// =========================================
-
-async function logout() {
-
-    await supabase.auth.signOut();
-
-    hideAllSections();
-
-    document.getElementById("loginSection").style.display =
-        "block";
-}
-
-
-// =========================================
-// LOCAL DATE
+// GET LOCAL DATE
 // =========================================
 
 function getLocalDateString(date = new Date()) {
 
     const year = date.getFullYear();
 
-    const month =
-        String(date.getMonth() + 1).padStart(2, "0");
+    const month = String(
+        date.getMonth() + 1
+    ).padStart(2, "0");
 
-    const day =
-        String(date.getDate()).padStart(2, "0");
+    const day = String(
+        date.getDate()
+    ).padStart(2, "0");
 
     return `${year}-${month}-${day}`;
 }
@@ -319,9 +92,678 @@ function getDateOffset(days) {
 
     const date = new Date();
 
-    date.setDate(date.getDate() + days);
+    date.setDate(
+        date.getDate() + days
+    );
 
     return getLocalDateString(date);
+}
+
+
+// =========================================
+// LOGIN
+// =========================================
+
+async function login() {
+
+    const emailInput =
+        document.getElementById("loginEmail");
+
+    const phoneInput =
+        document.getElementById("loginPhone");
+
+    const passwordInput =
+        document.getElementById("loginPassword");
+
+    const message =
+        document.getElementById("loginMessage");
+
+    const password =
+        passwordInput ? passwordInput.value : "";
+
+    const email =
+        emailInput ? emailInput.value.trim() : "";
+
+    const phone =
+        phoneInput ? phoneInput.value.trim() : "";
+
+    if (message) {
+        message.textContent = "";
+    }
+
+
+    if (!password) {
+
+        if (message) {
+            message.textContent =
+                "Please enter your password.";
+        }
+
+        return;
+    }
+
+
+    // =========================================
+    // MOBILE NUMBER LOGIN
+    // =========================================
+
+    if (phone && !email) {
+
+        if (message) {
+            message.textContent =
+                "Logging in...";
+        }
+
+        try {
+
+            const { data, error } =
+                await supabase.functions.invoke(
+                    "swift-endpoint",
+                    {
+                        body: {
+                            phone: phone,
+                            password: password
+                        }
+                    }
+                );
+
+
+            if (error) {
+
+                console.error(
+                    "Phone login error:",
+                    error
+                );
+
+                if (message) {
+                    message.textContent =
+                        error.message ||
+                        "Mobile login failed.";
+                }
+
+                return;
+            }
+
+
+            // Edge Function may return:
+            // { access_token, refresh_token }
+            // OR
+            // { session: { access_token, refresh_token } }
+
+            const sessionData =
+                data?.session || data;
+
+
+            if (
+                !sessionData?.access_token ||
+                !sessionData?.refresh_token
+            ) {
+
+                console.error(
+                    "Invalid phone login response:",
+                    data
+                );
+
+                if (message) {
+                    message.textContent =
+                        "Mobile login failed. Invalid server response.";
+                }
+
+                return;
+            }
+
+
+            const {
+                data: sessionResult,
+                error: sessionError
+            } = await supabase.auth.setSession({
+
+                access_token:
+                    sessionData.access_token,
+
+                refresh_token:
+                    sessionData.refresh_token
+
+            });
+
+
+            if (sessionError) {
+
+                console.error(
+                    "Session error:",
+                    sessionError
+                );
+
+                if (message) {
+                    message.textContent =
+                        sessionError.message;
+                }
+
+                return;
+            }
+
+
+            if (!sessionResult?.user) {
+
+                if (message) {
+                    message.textContent =
+                        "Login failed.";
+                }
+
+                return;
+            }
+
+
+            await openUserDashboard(
+                sessionResult.session
+            );
+
+            return;
+
+        } catch (err) {
+
+            console.error(
+                "Phone login exception:",
+                err
+            );
+
+            if (message) {
+                message.textContent =
+                    "Mobile login failed.";
+            }
+
+            return;
+        }
+    }
+
+
+    // =========================================
+    // EMAIL LOGIN
+    // =========================================
+
+    if (!email) {
+
+        if (message) {
+            message.textContent =
+                "Please enter your email or mobile number.";
+        }
+
+        return;
+    }
+
+
+    if (message) {
+        message.textContent =
+            "Logging in...";
+    }
+
+
+    const {
+        data,
+        error
+    } = await supabase.auth.signInWithPassword({
+
+        email: email,
+
+        password: password
+
+    });
+
+
+    if (error) {
+
+        console.error(
+            "Email login error:",
+            error
+        );
+
+        if (message) {
+            message.textContent =
+                error.message;
+        }
+
+        return;
+    }
+
+
+    await openUserDashboard(
+        data.session
+    );
+}
+
+
+// =========================================
+// OPEN USER DASHBOARD
+// =========================================
+
+async function openUserDashboard(session) {
+
+    if (!session?.user) {
+        showLogin();
+        return;
+    }
+
+
+    const message =
+        document.getElementById("loginMessage");
+
+
+    const {
+        data: profile,
+        error: profileError
+    } = await supabase
+        .from("profiles")
+        .select("name, role")
+        .eq("id", session.user.id)
+        .single();
+
+
+    if (profileError) {
+
+        console.error(
+            "Profile error:",
+            profileError
+        );
+
+        if (message) {
+            message.textContent =
+                "Profile not found.";
+        }
+
+        return;
+    }
+
+
+    hideAllSections();
+
+
+    // =========================================
+    // ADMIN
+    // =========================================
+
+    if (profile.role === "admin") {
+
+        const dashboard =
+            document.getElementById(
+                "adminDashboard"
+            );
+
+        if (dashboard) {
+            dashboard.style.display = "block";
+        }
+
+
+        const attendanceDate =
+            document.getElementById(
+                "attendanceDate"
+            );
+
+
+        if (attendanceDate) {
+
+            attendanceDate.value =
+                getLocalDateString();
+
+        }
+
+
+        await loadAdminStudentsForDate();
+
+        await loadAdminAttendance();
+
+        return;
+    }
+
+
+    // =========================================
+    // STUDENT
+    // =========================================
+
+    const dashboard =
+        document.getElementById(
+            "studentDashboard"
+        );
+
+    if (dashboard) {
+        dashboard.style.display = "block";
+    }
+
+
+    const welcome =
+        document.getElementById(
+            "studentWelcome"
+        );
+
+
+    if (welcome) {
+
+        welcome.textContent =
+            `Welcome, ${profile.name || "Student"}!`;
+
+    }
+
+
+    await loadMyAttendance();
+}
+
+
+// =========================================
+// SIGN UP
+// =========================================
+
+async function signup() {
+
+    const name =
+        document.getElementById(
+            "signupName"
+        ).value.trim();
+
+    const phone =
+        document.getElementById(
+            "signupPhone"
+        ).value.trim();
+
+    const email =
+        document.getElementById(
+            "signupEmail"
+        ).value.trim();
+
+    const password =
+        document.getElementById(
+            "signupPassword"
+        ).value;
+
+    const message =
+        document.getElementById(
+            "signupMessage"
+        );
+
+
+    message.textContent = "";
+
+
+    if (
+        !name ||
+        !phone ||
+        !email ||
+        !password
+    ) {
+
+        message.textContent =
+            "Please fill all fields.";
+
+        return;
+    }
+
+
+    const { error } =
+        await supabase.auth.signUp({
+
+            email: email,
+
+            password: password,
+
+            options: {
+
+                data: {
+
+                    name: name,
+
+                    phone: phone
+
+                },
+
+                emailRedirectTo:
+                    window.location.origin +
+                    window.location.pathname
+            }
+
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        message.textContent =
+            error.message;
+
+        return;
+    }
+
+
+    message.textContent =
+        "Account created successfully. Please check your email if verification is required.";
+}
+
+
+// =========================================
+// PASSWORD RECOVERY
+// =========================================
+
+async function sendPasswordRecovery() {
+
+    const email =
+        document.getElementById(
+            "forgotEmail"
+        ).value.trim();
+
+    const message =
+        document.getElementById(
+            "forgotMessage"
+        );
+
+
+    message.textContent = "";
+
+
+    if (!email) {
+
+        message.textContent =
+            "Please enter your email.";
+
+        return;
+    }
+
+
+    const { error } =
+        await supabase.auth.resetPasswordForEmail(
+            email,
+            {
+                redirectTo:
+                    window.location.origin +
+                    window.location.pathname
+            }
+        );
+
+
+    if (error) {
+
+        console.error(error);
+
+        message.textContent =
+            error.message;
+
+        return;
+    }
+
+
+    message.textContent =
+        "Password reset link sent to your email.";
+}
+
+
+// =========================================
+// UPDATE PASSWORD
+// =========================================
+
+async function updatePassword() {
+
+    const password =
+        document.getElementById(
+            "newPassword"
+        ).value;
+
+    const message =
+        document.getElementById(
+            "resetPasswordMessage"
+        );
+
+
+    message.textContent = "";
+
+
+    if (!password) {
+
+        message.textContent =
+            "Please enter a new password.";
+
+        return;
+    }
+
+
+    const { error } =
+        await supabase.auth.updateUser({
+
+            password: password
+
+        });
+
+
+    if (error) {
+
+        console.error(error);
+
+        message.textContent =
+            error.message;
+
+        return;
+    }
+
+
+    message.textContent =
+        "Password updated successfully.";
+
+
+    setTimeout(() => {
+
+        showLogin();
+
+    }, 1500);
+}
+
+
+// =========================================
+// AUTH STATE
+// =========================================
+
+supabase.auth.onAuthStateChange(
+    (event, session) => {
+
+        console.log(
+            "Auth event:",
+            event
+        );
+
+
+        if (
+            event === "PASSWORD_RECOVERY"
+        ) {
+
+            hideAllSections();
+
+            const resetSection =
+                document.getElementById(
+                    "resetPasswordSection"
+                );
+
+            if (resetSection) {
+
+                resetSection.style.display =
+                    "block";
+
+            }
+
+            return;
+        }
+
+
+        if (
+            event === "SIGNED_OUT"
+        ) {
+
+            showLogin();
+
+        }
+
+    }
+);
+
+
+// =========================================
+// RESTORE SESSION AFTER REFRESH
+// =========================================
+
+async function restoreSession() {
+
+    const {
+        data,
+        error
+    } = await supabase.auth.getSession();
+
+
+    if (error) {
+
+        console.error(
+            "Session restore error:",
+            error
+        );
+
+        showLogin();
+
+        return;
+    }
+
+
+    if (data?.session) {
+
+        console.log(
+            "Existing session restored."
+        );
+
+        await openUserDashboard(
+            data.session
+        );
+
+    } else {
+
+        showLogin();
+
+    }
+}
+
+
+// =========================================
+// LOGOUT
+// =========================================
+
+async function logout() {
+
+    await supabase.auth.signOut();
+
+    hideAllSections();
+
+    const loginSection =
+        document.getElementById(
+            "loginSection"
+        );
+
+    if (loginSection) {
+
+        loginSection.style.display =
+            "block";
+
+    }
 }
 
 
@@ -332,59 +774,113 @@ function getDateOffset(days) {
 async function loadAdminStudentsForDate() {
 
     const dateInput =
-        document.getElementById("attendanceDate");
+        document.getElementById(
+            "attendanceDate"
+        );
 
     const studentList =
-        document.getElementById("studentList");
+        document.getElementById(
+            "studentList"
+        );
 
-    if (!dateInput || !studentList) return;
 
-    const date = dateInput.value;
+    if (
+        !dateInput ||
+        !studentList
+    ) {
+        return;
+    }
 
-    if (!date) return;
 
-    studentList.innerHTML = "Loading...";
+    const date =
+        dateInput.value;
 
-    const { data: students, error } =
-        await supabase
-            .from("profiles")
-            .select("id, name, email, phone")
-            .eq("role", "student")
-            .order("name");
+
+    if (!date) {
+        return;
+    }
+
+
+    studentList.innerHTML =
+        "Loading...";
+
+
+    // Only request columns we know exist.
+    // This avoids the previous error caused by
+    // requesting email/phone if those columns
+    // are not present in profiles.
+
+    const {
+        data: students,
+        error
+    } = await supabase
+        .from("profiles")
+        .select("id, name")
+        .eq("role", "student")
+        .order("name");
+
 
     if (error) {
 
-        studentList.innerHTML =
-            "Error loading students.";
+        console.error(
+            "Student loading error:",
+            error
+        );
 
-        console.error(error);
+        studentList.innerHTML =
+            "Error loading students: " +
+            error.message;
 
         return;
     }
 
-    const { data: attendance, error: attendanceError } =
-        await supabase
-            .from("Attendance")
-            .select("user_id, present")
-            .eq("attendance_date", date);
+
+    const {
+        data: attendance,
+        error: attendanceError
+    } = await supabase
+        .from("Attendance")
+        .select(
+            "user_id, present"
+        )
+        .eq(
+            "attendance_date",
+            date
+        );
+
 
     if (attendanceError) {
 
-        studentList.innerHTML =
-            "Error loading attendance.";
+        console.error(
+            attendanceError
+        );
 
-        console.error(attendanceError);
+        studentList.innerHTML =
+            "Error loading attendance: " +
+            attendanceError.message;
 
         return;
     }
 
+
     const attendanceMap = {};
 
-    attendance.forEach(record => {
-        attendanceMap[record.user_id] = record.present;
-    });
 
-    if (!students || students.length === 0) {
+    (attendance || []).forEach(
+        record => {
+
+            attendanceMap[
+                record.user_id
+            ] = record.present;
+
+        }
+    );
+
+
+    if (
+        !students ||
+        students.length === 0
+    ) {
 
         studentList.innerHTML =
             "No students found.";
@@ -392,33 +888,49 @@ async function loadAdminStudentsForDate() {
         return;
     }
 
+
     studentList.innerHTML = "";
 
-    students.forEach(student => {
 
-        const row = document.createElement("div");
+    students.forEach(
+        student => {
 
-        row.className = "student-row";
+            const row =
+                document.createElement(
+                    "div"
+                );
 
-        const checked =
-            attendanceMap[student.id] === true
-                ? "checked"
-                : "";
+            row.className =
+                "student-row";
 
-        row.innerHTML = `
-            <label>
-                <input
-                    type="checkbox"
-                    class="admin-attendance-checkbox"
-                    data-user-id="${student.id}"
-                    ${checked}
-                >
-                ${student.name || "Unnamed Student"}
-            </label>
-        `;
 
-        studentList.appendChild(row);
-    });
+            const checked =
+                attendanceMap[
+                    student.id
+                ] === true
+                    ? "checked"
+                    : "";
+
+
+            row.innerHTML = `
+                <label>
+                    <input
+                        type="checkbox"
+                        class="admin-attendance-checkbox"
+                        data-user-id="${student.id}"
+                        ${checked}
+                    >
+                    ${student.name || "Unnamed Student"}
+                </label>
+            `;
+
+
+            studentList.appendChild(
+                row
+            );
+
+        }
+    );
 }
 
 
@@ -429,12 +941,19 @@ async function loadAdminStudentsForDate() {
 async function saveAttendance() {
 
     const dateInput =
-        document.getElementById("attendanceDate");
+        document.getElementById(
+            "attendanceDate"
+        );
 
     const message =
-        document.getElementById("attendanceMessage");
+        document.getElementById(
+            "attendanceMessage"
+        );
 
-    const date = dateInput.value;
+
+    const date =
+        dateInput.value;
+
 
     if (!date) {
 
@@ -444,10 +963,12 @@ async function saveAttendance() {
         return;
     }
 
+
     const checkboxes =
         document.querySelectorAll(
             ".admin-attendance-checkbox"
         );
+
 
     if (!checkboxes.length) {
 
@@ -457,10 +978,14 @@ async function saveAttendance() {
         return;
     }
 
+
     message.textContent =
         "Saving attendance...";
 
-    for (const checkbox of checkboxes) {
+
+    for (
+        const checkbox of checkboxes
+    ) {
 
         const userId =
             checkbox.dataset.userId;
@@ -468,30 +993,51 @@ async function saveAttendance() {
         const present =
             checkbox.checked;
 
-        const { data: existing, error: checkError } =
-            await supabase
-                .from("Attendance")
-                .select("id")
-                .eq("user_id", userId)
-                .eq("attendance_date", date)
-                .limit(1);
+
+        const {
+            data: existing,
+            error: checkError
+        } = await supabase
+            .from("Attendance")
+            .select("id")
+            .eq(
+                "user_id",
+                userId
+            )
+            .eq(
+                "attendance_date",
+                date
+            )
+            .limit(1);
+
 
         if (checkError) {
 
-            console.error(checkError);
+            console.error(
+                checkError
+            );
 
             continue;
         }
 
-        if (existing && existing.length > 0) {
+
+        if (
+            existing &&
+            existing.length > 0
+        ) {
 
             const { error } =
                 await supabase
                     .from("Attendance")
                     .update({
-                        present: present
+                        present:
+                            present
                     })
-                    .eq("id", existing[0].id);
+                    .eq(
+                        "id",
+                        existing[0].id
+                    );
+
 
             if (error) {
                 console.error(error);
@@ -503,19 +1049,31 @@ async function saveAttendance() {
                 await supabase
                     .from("Attendance")
                     .insert({
-                        user_id: userId,
-                        attendance_date: date,
-                        present: present
+
+                        user_id:
+                            userId,
+
+                        attendance_date:
+                            date,
+
+                        present:
+                            present
+
                     });
+
 
             if (error) {
                 console.error(error);
             }
+
         }
+
     }
+
 
     message.textContent =
         "Attendance saved successfully.";
+
 
     await loadAdminAttendance();
 }
@@ -528,31 +1086,51 @@ async function saveAttendance() {
 async function loadAdminAttendance() {
 
     const history =
-        document.getElementById("adminAttendanceHistory");
+        document.getElementById(
+            "adminAttendanceHistory"
+        );
 
-    if (!history) return;
 
-    history.innerHTML = "Loading...";
+    if (!history) {
+        return;
+    }
 
-    const { data, error } =
-        await supabase
-            .from("Attendance")
-            .select("user_id, attendance_date, present")
-            .order("attendance_date", {
+
+    history.innerHTML =
+        "Loading...";
+
+
+    const {
+        data,
+        error
+    } = await supabase
+        .from("Attendance")
+        .select(
+            "user_id, attendance_date, present"
+        )
+        .order(
+            "attendance_date",
+            {
                 ascending: false
-            });
+            }
+        );
+
 
     if (error) {
+
+        console.error(error);
 
         history.innerHTML =
             "Error loading attendance.";
 
-        console.error(error);
-
         return;
     }
 
-    if (!data || data.length === 0) {
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
 
         history.innerHTML =
             "No attendance records found.";
@@ -560,18 +1138,31 @@ async function loadAdminAttendance() {
         return;
     }
 
+
     history.innerHTML = "";
+
 
     data.forEach(record => {
 
-        const row = document.createElement("div");
+        const row =
+            document.createElement(
+                "div"
+            );
 
-        row.className = "attendance-history-row";
+        row.className =
+            "attendance-history-row";
+
 
         row.textContent =
-            `${record.attendance_date} - ${record.present ? "Present" : "Absent"}`;
+            `${record.attendance_date} - ${
+                record.present
+                    ? "Present"
+                    : "Absent"
+            }`;
+
 
         history.appendChild(row);
+
     });
 }
 
@@ -583,19 +1174,39 @@ async function loadAdminAttendance() {
 async function loadAdminAbsentees(date) {
 
     const list =
-        document.getElementById("adminAbsenteesList");
+        document.getElementById(
+            "adminAbsenteesList"
+        );
 
-    if (!list) return;
 
-    list.innerHTML = "Loading...";
+    if (!list) {
+        return;
+    }
 
-    const { data: students, error: studentsError } =
-        await supabase
-            .from("profiles")
-            .select("id, name")
-            .eq("role", "student");
+
+    list.innerHTML =
+        "Loading...";
+
+
+    const {
+        data: students,
+        error: studentsError
+    } = await supabase
+        .from("profiles")
+        .select(
+            "id, name"
+        )
+        .eq(
+            "role",
+            "student"
+        );
+
 
     if (studentsError) {
+
+        console.error(
+            studentsError
+        );
 
         list.innerHTML =
             "Error loading students.";
@@ -603,13 +1214,26 @@ async function loadAdminAbsentees(date) {
         return;
     }
 
-    const { data: attendance, error: attendanceError } =
-        await supabase
-            .from("Attendance")
-            .select("user_id, present")
-            .eq("attendance_date", date);
+
+    const {
+        data: attendance,
+        error: attendanceError
+    } = await supabase
+        .from("Attendance")
+        .select(
+            "user_id, present"
+        )
+        .eq(
+            "attendance_date",
+            date
+        );
+
 
     if (attendanceError) {
+
+        console.error(
+            attendanceError
+        );
 
         list.innerHTML =
             "Error loading attendance.";
@@ -617,18 +1241,33 @@ async function loadAdminAbsentees(date) {
         return;
     }
 
+
     const attendanceMap = {};
 
-    attendance.forEach(record => {
-        attendanceMap[record.user_id] = record.present;
-    });
+
+    (attendance || []).forEach(
+        record => {
+
+            attendanceMap[
+                record.user_id
+            ] = record.present;
+
+        }
+    );
+
 
     const absentees =
-        students.filter(student =>
-            attendanceMap[student.id] !== true
+        students.filter(
+            student =>
+                attendanceMap[
+                    student.id
+                ] !== true
         );
 
-    if (absentees.length === 0) {
+
+    if (
+        absentees.length === 0
+    ) {
 
         list.innerHTML =
             "No absentees.";
@@ -636,18 +1275,27 @@ async function loadAdminAbsentees(date) {
         return;
     }
 
+
     list.innerHTML = "";
 
-    absentees.forEach(student => {
 
-        const row =
-            document.createElement("div");
+    absentees.forEach(
+        student => {
 
-        row.textContent =
-            student.name || "Unnamed Student";
+            const row =
+                document.createElement(
+                    "div"
+                );
 
-        list.appendChild(row);
-    });
+            row.textContent =
+                student.name ||
+                "Unnamed Student";
+
+
+            list.appendChild(row);
+
+        }
+    );
 }
 
 
@@ -658,24 +1306,39 @@ async function loadAdminAbsentees(date) {
 async function checkSelectedAttendanceDate() {
 
     const dateInput =
-        document.getElementById("studentAttendanceDate");
+        document.getElementById(
+            "studentAttendanceDate"
+        );
 
     const status =
-        document.getElementById("todayAttendanceStatus");
+        document.getElementById(
+            "todayAttendanceStatus"
+        );
 
     const presentButton =
-        document.getElementById("studentPresentButton");
+        document.getElementById(
+            "studentPresentButton"
+        );
 
     const absentButton =
-        document.getElementById("studentAbsentButton");
+        document.getElementById(
+            "studentAbsentButton"
+        );
 
     const message =
-        document.getElementById("studentAttendanceMessage");
+        document.getElementById(
+            "studentAttendanceMessage"
+        );
 
-    if (!dateInput) return;
+
+    if (!dateInput) {
+        return;
+    }
+
 
     const selectedDate =
         dateInput.value;
+
 
     const today =
         getLocalDateString();
@@ -686,33 +1349,48 @@ async function checkSelectedAttendanceDate() {
     const dayBeforeYesterday =
         getDateOffset(-2);
 
+
     const allowedDates = [
         today,
         yesterday,
         dayBeforeYesterday
     ];
 
-    // Reset
+
     presentButton.disabled = false;
     absentButton.disabled = false;
 
     message.textContent = "";
+
 
     if (!selectedDate) {
 
         status.textContent =
             "Please select a date.";
 
-        presentButton.disabled = true;
-        absentButton.disabled = true;
+        presentButton.disabled =
+            true;
+
+        absentButton.disabled =
+            true;
 
         return;
     }
 
-    // Older or future dates
-    if (!allowedDates.includes(selectedDate)) {
 
-        if (selectedDate > today) {
+    // =========================================
+    // FUTURE / OLD DATE
+    // =========================================
+
+    if (
+        !allowedDates.includes(
+            selectedDate
+        )
+    ) {
+
+        if (
+            selectedDate > today
+        ) {
 
             status.textContent =
                 "Future dates are not available.";
@@ -721,39 +1399,72 @@ async function checkSelectedAttendanceDate() {
 
             status.textContent =
                 "Attendance can only be entered for today, yesterday, or the day before yesterday.";
+
         }
 
-        presentButton.disabled = true;
-        absentButton.disabled = true;
+
+        presentButton.disabled =
+            true;
+
+        absentButton.disabled =
+            true;
 
         return;
     }
 
-    // Get current user
+
+    // =========================================
+    // GET CURRENT USER
+    // =========================================
+
     const {
-        data: { user },
+        data: {
+            user
+        },
         error: userError
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+
+    if (
+        userError ||
+        !user
+    ) {
 
         status.textContent =
             "Please login again.";
 
-        presentButton.disabled = true;
-        absentButton.disabled = true;
+        presentButton.disabled =
+            true;
+
+        absentButton.disabled =
+            true;
 
         return;
     }
 
-    // Check whether attendance already exists
-    const { data: existing, error } =
-        await supabase
-            .from("Attendance")
-            .select("id, present")
-            .eq("user_id", user.id)
-            .eq("attendance_date", selectedDate)
-            .limit(1);
+
+    // =========================================
+    // CHECK EXISTING RECORD
+    // =========================================
+
+    const {
+        data: existing,
+        error
+    } = await supabase
+        .from("Attendance")
+        .select(
+            "id, present"
+        )
+        .eq(
+            "user_id",
+            user.id
+        )
+        .eq(
+            "attendance_date",
+            selectedDate
+        )
+        .limit(1);
+
 
     if (error) {
 
@@ -762,39 +1473,66 @@ async function checkSelectedAttendanceDate() {
         status.textContent =
             "Unable to check attendance.";
 
-        presentButton.disabled = true;
-        absentButton.disabled = true;
+        presentButton.disabled =
+            true;
+
+        absentButton.disabled =
+            true;
 
         return;
     }
 
-    if (existing && existing.length > 0) {
 
-        const record = existing[0];
+    // =========================================
+    // ALREADY SUBMITTED = LOCKED
+    // =========================================
+
+    if (
+        existing &&
+        existing.length > 0
+    ) {
+
+        const record =
+            existing[0];
+
 
         status.textContent =
             record.present
                 ? "Present ✓"
                 : "Absent ✕";
 
+
         message.textContent =
             "Attendance already submitted. This record is locked and cannot be changed.";
 
-        // LOCK BUTTONS
-        presentButton.disabled = true;
-        absentButton.disabled = true;
+
+        presentButton.disabled =
+            true;
+
+        absentButton.disabled =
+            true;
 
         return;
     }
 
+
+    // =========================================
+    // NOT SUBMITTED
+    // =========================================
+
     status.textContent =
         "Not submitted yet.";
+
 
     message.textContent =
         "You can submit attendance for this date.";
 
-    presentButton.disabled = false;
-    absentButton.disabled = false;
+
+    presentButton.disabled =
+        false;
+
+    absentButton.disabled =
+        false;
 }
 
 
@@ -805,24 +1543,34 @@ async function checkSelectedAttendanceDate() {
 async function setMyAttendance(present) {
 
     const dateInput =
-        document.getElementById("studentAttendanceDate");
+        document.getElementById(
+            "studentAttendanceDate"
+        );
 
     const status =
-        document.getElementById("todayAttendanceStatus");
+        document.getElementById(
+            "todayAttendanceStatus"
+        );
 
     const message =
-        document.getElementById("studentAttendanceMessage");
+        document.getElementById(
+            "studentAttendanceMessage"
+        );
 
     const presentButton =
-        document.getElementById("studentPresentButton");
+        document.getElementById(
+            "studentPresentButton"
+        );
 
     const absentButton =
-        document.getElementById("studentAbsentButton");
+        document.getElementById(
+            "studentAbsentButton"
+        );
 
-    if (!dateInput) return;
 
     const selectedDate =
         dateInput.value;
+
 
     const today =
         getLocalDateString();
@@ -833,14 +1581,23 @@ async function setMyAttendance(present) {
     const dayBeforeYesterday =
         getDateOffset(-2);
 
+
     const allowedDates = [
         today,
         yesterday,
         dayBeforeYesterday
     ];
 
-    // Check date
-    if (!allowedDates.includes(selectedDate)) {
+
+    // =========================================
+    // CHECK DATE
+    // =========================================
+
+    if (
+        !allowedDates.includes(
+            selectedDate
+        )
+    ) {
 
         message.textContent =
             "You can only submit attendance for today, yesterday, or the day before yesterday.";
@@ -848,13 +1605,23 @@ async function setMyAttendance(present) {
         return;
     }
 
-    // Get logged-in user
+
+    // =========================================
+    // GET USER
+    // =========================================
+
     const {
-        data: { user },
+        data: {
+            user
+        },
         error: userError
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+
+    if (
+        userError ||
+        !user
+    ) {
 
         message.textContent =
             "Please login again.";
@@ -862,20 +1629,33 @@ async function setMyAttendance(present) {
         return;
     }
 
+
     message.textContent =
         "Submitting attendance...";
 
-    // IMPORTANT:
-    // We NEVER UPDATE an existing student record.
-    // If a record exists, it remains locked.
 
-    const { data: existing, error: checkError } =
-        await supabase
-            .from("Attendance")
-            .select("id, present")
-            .eq("user_id", user.id)
-            .eq("attendance_date", selectedDate)
-            .limit(1);
+    // =========================================
+    // CHECK AGAIN BEFORE INSERT
+    // =========================================
+
+    const {
+        data: existing,
+        error: checkError
+    } = await supabase
+        .from("Attendance")
+        .select(
+            "id, present"
+        )
+        .eq(
+            "user_id",
+            user.id
+        )
+        .eq(
+            "attendance_date",
+            selectedDate
+        )
+        .limit(1);
+
 
     if (checkError) {
 
@@ -887,39 +1667,70 @@ async function setMyAttendance(present) {
         return;
     }
 
-    if (existing && existing.length > 0) {
 
-        const record = existing[0];
+    // =========================================
+    // EXISTING RECORD = DO NOT CHANGE
+    // =========================================
+
+    if (
+        existing &&
+        existing.length > 0
+    ) {
+
+        const record =
+            existing[0];
+
 
         status.textContent =
             record.present
                 ? "Present ✓"
                 : "Absent ✕";
 
+
         message.textContent =
             "Attendance was already submitted and is locked.";
 
-        presentButton.disabled = true;
-        absentButton.disabled = true;
+
+        presentButton.disabled =
+            true;
+
+        absentButton.disabled =
+            true;
+
 
         await loadMyAttendance();
 
         return;
     }
 
-    // Insert new attendance
-    const { error: insertError } =
-        await supabase
-            .from("Attendance")
-            .insert({
-                user_id: user.id,
-                attendance_date: selectedDate,
-                present: present
-            });
+
+    // =========================================
+    // INSERT NEW RECORD
+    // =========================================
+
+    const {
+        error: insertError
+    } = await supabase
+        .from("Attendance")
+        .insert({
+
+            user_id:
+                user.id,
+
+            attendance_date:
+                selectedDate,
+
+            present:
+                present
+
+        });
+
 
     if (insertError) {
 
-        console.error(insertError);
+        console.error(
+            insertError
+        );
 
         message.textContent =
             insertError.message;
@@ -927,19 +1738,24 @@ async function setMyAttendance(present) {
         return;
     }
 
+
     status.textContent =
         present
             ? "Present ✓"
             : "Absent ✕";
 
+
     message.textContent =
         "Attendance submitted successfully. This record is now locked.";
 
-    // LOCK BUTTONS IMMEDIATELY
-    presentButton.disabled = true;
-    absentButton.disabled = true;
 
-    // Reload everything
+    presentButton.disabled =
+        true;
+
+    absentButton.disabled =
+        true;
+
+
     await loadMyAttendance();
 }
 
@@ -951,24 +1767,40 @@ async function setMyAttendance(present) {
 async function loadMyAttendance() {
 
     const dateInput =
-        document.getElementById("studentAttendanceDate");
+        document.getElementById(
+            "studentAttendanceDate"
+        );
 
     const history =
-        document.getElementById("attendanceHistory");
+        document.getElementById(
+            "attendanceHistory"
+        );
 
     const percentage =
-        document.getElementById("attendancePercentage");
+        document.getElementById(
+            "attendancePercentage"
+        );
 
     const totalDays =
-        document.getElementById("totalDays");
+        document.getElementById(
+            "totalDays"
+        );
 
     const presentDays =
-        document.getElementById("presentDays");
+        document.getElementById(
+            "presentDays"
+        );
 
     const absentDays =
-        document.getElementById("absentDays");
+        document.getElementById(
+            "absentDays"
+        );
 
-    if (!dateInput) return;
+
+    if (!dateInput) {
+        return;
+    }
+
 
     const today =
         getLocalDateString();
@@ -976,67 +1808,117 @@ async function loadMyAttendance() {
     const minimumDate =
         getDateOffset(-2);
 
-    // Date picker restrictions
-    dateInput.min = minimumDate;
-    dateInput.max = today;
 
-    // If no date selected, use today
+    // =========================================
+    // DATE PICKER
+    // =========================================
+
+    dateInput.min =
+        minimumDate;
+
+    dateInput.max =
+        today;
+
+
     if (!dateInput.value) {
-        dateInput.value = today;
+
+        dateInput.value =
+            today;
+
     }
 
+
+    // =========================================
+    // GET USER
+    // =========================================
+
     const {
-        data: { user },
+        data: {
+            user
+        },
         error: userError
     } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+
+    if (
+        userError ||
+        !user
+    ) {
         return;
     }
 
+
     // =========================================
-    // LOAD ALL USER ATTENDANCE
+    // LOAD ALL ATTENDANCE
     // =========================================
 
-    const { data, error } =
-        await supabase
-            .from("Attendance")
-            .select("id, attendance_date, present")
-            .eq("user_id", user.id)
-            .order("attendance_date", {
+    const {
+        data,
+        error
+    } = await supabase
+        .from("Attendance")
+        .select(
+            "id, attendance_date, present"
+        )
+        .eq(
+            "user_id",
+            user.id
+        )
+        .order(
+            "attendance_date",
+            {
                 ascending: false
-            });
+            }
+        );
+
 
     if (error) {
 
         console.error(error);
 
         if (history) {
+
             history.innerHTML =
                 "Error loading attendance.";
+
         }
 
         return;
     }
 
-    const records = data || [];
+
+    const records =
+        data || [];
+
 
     const attendanceMap = {};
 
-    records.forEach(record => {
 
-        // Keep the first record if duplicates somehow exist
-        if (!attendanceMap[record.attendance_date]) {
-            attendanceMap[record.attendance_date] = record;
+    records.forEach(
+        record => {
+
+            if (
+                !attendanceMap[
+                    record.attendance_date
+                ]
+            ) {
+
+                attendanceMap[
+                    record.attendance_date
+                ] = record;
+
+            }
+
         }
-    });
+    );
 
 
     // =========================================
-    // MONTHLY SUMMARY
+    // CURRENT MONTH
     // =========================================
 
-    const now = new Date();
+    const now =
+        new Date();
 
     const currentYear =
         now.getFullYear();
@@ -1044,181 +1926,267 @@ async function loadMyAttendance() {
     const currentMonth =
         now.getMonth();
 
+
     const monthRecords =
-        records.filter(record => {
+        records.filter(
+            record => {
 
-            const date =
-                new Date(record.attendance_date + "T00:00:00");
+                const date =
+                    new Date(
+                        record.attendance_date +
+                        "T00:00:00"
+                    );
 
-            return (
-                date.getFullYear() === currentYear &&
-                date.getMonth() === currentMonth
-            );
-        });
+
+                return (
+                    date.getFullYear() ===
+                        currentYear &&
+                    date.getMonth() ===
+                        currentMonth
+                );
+
+            }
+        );
+
 
     const totalRecorded =
         monthRecords.length;
 
+
     const presentCount =
         monthRecords.filter(
-            record => record.present === true
+            record =>
+                record.present === true
         ).length;
+
 
     const absentCount =
         monthRecords.filter(
-            record => record.present === false
+            record =>
+                record.present === false
         ).length;
+
 
     const attendancePercentageValue =
         totalRecorded > 0
             ? Math.round(
-                (presentCount / totalRecorded) * 100
+                (
+                    presentCount /
+                    totalRecorded
+                ) * 100
             )
             : 0;
 
+
     if (percentage) {
+
         percentage.textContent =
             `${attendancePercentageValue}%`;
+
     }
+
 
     if (totalDays) {
+
         totalDays.textContent =
             totalRecorded;
+
     }
+
 
     if (presentDays) {
+
         presentDays.textContent =
             presentCount;
+
     }
+
 
     if (absentDays) {
+
         absentDays.textContent =
             absentCount;
+
     }
 
 
     // =========================================
-    // WHOLE CURRENT MONTH
+    // SHOW WHOLE CURRENT MONTH
     // =========================================
 
-    if (history) {
+    if (!history) {
+        return;
+    }
 
-        history.innerHTML = "";
 
-        const firstDay =
+    history.innerHTML = "";
+
+
+    const firstDay =
+        new Date(
+            currentYear,
+            currentMonth,
+            1
+        );
+
+
+    const lastDay =
+        new Date(
+            currentYear,
+            currentMonth + 1,
+            0
+        );
+
+
+    const monthTitle =
+        document.createElement(
+            "h3"
+        );
+
+
+    monthTitle.textContent =
+        firstDay.toLocaleString(
+            "en-US",
+            {
+                month: "long",
+                year: "numeric"
+            }
+        );
+
+
+    history.appendChild(
+        monthTitle
+    );
+
+
+    for (
+        let day = 1;
+        day <= lastDay.getDate();
+        day++
+    ) {
+
+        const date =
             new Date(
                 currentYear,
                 currentMonth,
-                1
+                day
             );
 
-        const lastDay =
-            new Date(
-                currentYear,
-                currentMonth + 1,
-                0
+
+        const dateString =
+            getLocalDateString(
+                date
             );
 
-        const monthTitle =
-            document.createElement("h3");
 
-        monthTitle.textContent =
-            firstDay.toLocaleString(
-                "en-US",
+        const record =
+            attendanceMap[
+                dateString
+            ];
+
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+
+        row.className =
+            "student-month-row";
+
+
+        const dateText =
+            date.toLocaleDateString(
+                "en-IN",
                 {
-                    month: "long",
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "short",
                     year: "numeric"
                 }
             );
 
-        history.appendChild(monthTitle);
+
+        let statusText;
 
 
-        for (
-            let day = 1;
-            day <= lastDay.getDate();
-            day++
+        // Future
+        if (
+            dateString > today
         ) {
 
-            const date =
-                new Date(
-                    currentYear,
-                    currentMonth,
-                    day
+            statusText =
+                "— Future";
+
+        }
+
+        // Already submitted
+        else if (record) {
+
+            statusText =
+                record.present
+                    ? "✓ Present 🔒"
+                    : "✕ Absent 🔒";
+
+        }
+
+        // Not submitted
+        else {
+
+            const dateDifference =
+                Math.round(
+                    (
+                        new Date(
+                            today +
+                            "T00:00:00"
+                        ) -
+                        new Date(
+                            dateString +
+                            "T00:00:00"
+                        )
+                    ) /
+                    (
+                        1000 *
+                        60 *
+                        60 *
+                        24
+                    )
                 );
 
-            const dateString =
-                getLocalDateString(date);
 
-            const record =
-                attendanceMap[dateString];
-
-            const row =
-                document.createElement("div");
-
-            row.className =
-                "student-month-row";
-
-            const dateText =
-                date.toLocaleDateString(
-                    "en-IN",
-                    {
-                        weekday: "short",
-                        day: "2-digit",
-                        month: "short",
-                        year: "numeric"
-                    }
-                );
-
-            let statusText = "";
-
-            if (dateString > today) {
+            if (
+                dateDifference >= 0 &&
+                dateDifference <= 2
+            ) {
 
                 statusText =
-                    "— Future";
-
-            } else if (record) {
-
-                statusText =
-                    record.present
-                        ? "✓ Present 🔒"
-                        : "✕ Absent 🔒";
+                    "— Available to enter";
 
             } else {
 
-                const dateDifference =
-                    Math.round(
-                        (
-                            new Date(today + "T00:00:00") -
-                            new Date(dateString + "T00:00:00")
-                        ) / (1000 * 60 * 60 * 24)
-                    );
+                statusText =
+                    "— Not submitted 🔒";
 
-                if (dateDifference >= 0 &&
-                    dateDifference <= 2) {
-
-                    statusText =
-                        "— Available to enter";
-
-                } else {
-
-                    statusText =
-                        "— Not submitted 🔒";
-                }
             }
 
-            row.innerHTML = `
-                <span>${dateText}</span>
-                <span>${statusText}</span>
-            `;
-
-            history.appendChild(row);
         }
+
+
+        row.innerHTML = `
+            <span>${dateText}</span>
+            <span>${statusText}</span>
+        `;
+
+
+        history.appendChild(
+            row
+        );
+
     }
 
 
     // =========================================
-    // UPDATE SELECTED DATE STATUS
+    // UPDATE SELECTED DATE
     // =========================================
 
     await checkSelectedAttendanceDate();
@@ -1231,11 +2199,13 @@ async function loadMyAttendance() {
 
 document.addEventListener(
     "DOMContentLoaded",
-    () => {
+    async () => {
 
         console.log(
             "Mission Fajr loaded successfully."
         );
+
+        await restoreSession();
 
     }
 );
