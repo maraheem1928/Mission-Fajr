@@ -98,12 +98,6 @@ function getDateOffset(days) {
 
     return getLocalDateString(date);
 }
-
-
-// =========================================
-// LOGIN
-// =========================================
-
 // =========================================
 // LOGIN
 // =========================================
@@ -119,7 +113,7 @@ async function login() {
     const message =
         document.getElementById("loginMessage");
 
-    const phone =
+    const loginValue =
         loginInput ? loginInput.value.trim() : "";
 
     const password =
@@ -129,9 +123,9 @@ async function login() {
         message.textContent = "";
     }
 
-    if (!phone) {
+    if (!loginValue) {
         message.textContent =
-            "Please enter your mobile number.";
+            "Please enter your mobile number or email.";
         return;
     }
 
@@ -145,6 +139,53 @@ async function login() {
 
     try {
 
+        // =====================================
+        // EMAIL LOGIN
+        // =====================================
+
+        if (loginValue.includes("@")) {
+
+            const {
+                data,
+                error
+            } = await supabase.auth.signInWithPassword({
+                email: loginValue,
+                password: password
+            });
+
+            if (error) {
+
+                console.error(
+                    "Email login error:",
+                    error
+                );
+
+                message.textContent =
+                    "Invalid email or password.";
+
+                return;
+            }
+
+            if (!data?.session) {
+
+                message.textContent =
+                    "Login failed. No session received.";
+
+                return;
+            }
+
+            await openUserDashboard(
+                data.session
+            );
+
+            return;
+        }
+
+
+        // =====================================
+        // MOBILE NUMBER LOGIN
+        // =====================================
+
         const {
             data,
             error
@@ -152,7 +193,7 @@ async function login() {
             "swift-endpoint",
             {
                 body: {
-                    phone: phone,
+                    phone: loginValue,
                     password: password
                 }
             }
@@ -221,7 +262,7 @@ async function login() {
             return;
         }
 
-        if (!sessionResult?.user) {
+        if (!sessionResult?.session) {
 
             message.textContent =
                 "Login failed.";
@@ -244,6 +285,42 @@ async function login() {
             "Unable to login. Please try again.";
     }
 }
+
+
+// =========================================
+// LOGIN WITH ENTER KEY
+// =========================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        const loginPassword =
+            document.getElementById(
+                "loginPassword"
+            );
+
+        if (loginPassword) {
+
+            loginPassword.addEventListener(
+                "keydown",
+                event => {
+
+                    if (event.key === "Enter") {
+
+                        event.preventDefault();
+
+                        login();
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+);
 
 // =========================================
 // OPEN USER DASHBOARD
