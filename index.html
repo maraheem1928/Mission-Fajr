@@ -181,59 +181,198 @@
         <p id="resetPasswordMessage"></p>
 
     </div>
+<!-- =========================================
+     ADMIN DASHBOARD
+     ========================================= -->
 
+<div
+    id="adminDashboard"
+    class="section"
+    style="display:none;"
+>
+
+    <!-- ADMIN HEADER -->
+
+    <div class="admin-dashboard-header">
+
+        <div>
+            <div class="admin-brand">
+                ☾ MISSION FAJR
+            </div>
+
+            <h1>Admin Dashboard</h1>
+
+            <p>Attendance Management</p>
+        </div>
+
+    </div>
 
 
     <!-- =========================================
-         ADMIN DASHBOARD
+         DATE SELECTION
          ========================================= -->
 
-    <div
-        id="adminDashboard"
-        class="section"
-        style="display:none;"
-    >
+    <section class="admin-attendance-card">
 
-        <h1>Admin Dashboard</h1>
+        <div class="admin-section-title">
+            <span class="admin-section-icon">📅</span>
 
-        <h2>Attendance Management</h2>
+            <div>
+                <h3>Attendance Date</h3>
+                <p>Select the date for attendance</p>
+            </div>
+        </div>
 
-        <label>
-            Select Date:
+
+        <label
+            for="attendanceDate"
+            class="admin-label"
+        >
+            Select Date
         </label>
+
 
         <input
             type="date"
             id="attendanceDate"
             onchange="loadAdminStudentsForDate()"
+            class="admin-date-input"
         >
 
-        <h3>Students</h3>
+    </section>
 
-        <div id="studentList"></div>
 
-        <button onclick="saveAttendance()">
-            Save Attendance
+
+    <!-- =========================================
+         STUDENT ATTENDANCE
+         ========================================= -->
+
+    <section class="admin-attendance-card">
+
+        <div class="admin-section-title">
+
+            <span class="admin-section-icon">
+                👥
+            </span>
+
+            <div>
+                <h3>Student Attendance</h3>
+
+                <p>
+                    Mark each student's attendance
+                </p>
+            </div>
+
+        </div>
+
+
+        <!-- STUDENT LIST -->
+
+        <div
+            id="studentList"
+            class="admin-student-list"
+        ></div>
+
+
+        <!-- SAVE BUTTON -->
+
+        <button
+            onclick="saveAttendance()"
+            class="admin-save-button"
+        >
+            ✓ Save Attendance
         </button>
 
-        <p id="attendanceMessage"></p>
+
+        <p
+            id="attendanceMessage"
+            class="admin-attendance-message"
+        ></p>
+
+    </section>
 
 
-        <h3>Absentees</h3>
 
-        <div id="adminAbsenteesList"></div>
+    <!-- =========================================
+         ABSENTEES
+         ========================================= -->
+
+    <section class="admin-attendance-card">
+
+        <div class="admin-section-title">
+
+            <span class="admin-section-icon">
+                ✕
+            </span>
+
+            <div>
+
+                <h3>Absentees</h3>
+
+                <p>
+                    Students marked absent
+                </p>
+
+            </div>
+
+        </div>
 
 
-        <h3>Attendance History</h3>
+        <div
+            id="adminAbsenteesList"
+            class="admin-absentees-list"
+        ></div>
 
-        <div id="adminAttendanceHistory"></div>
+    </section>
 
 
-        <button onclick="logout()">
-            Logout
-        </button>
 
-    </div>
+    <!-- =========================================
+         ATTENDANCE HISTORY
+         ========================================= -->
+
+    <section class="admin-attendance-card">
+
+        <div class="admin-section-title">
+
+            <span class="admin-section-icon">
+                🕘
+            </span>
+
+            <div>
+
+                <h3>Attendance History</h3>
+
+                <p>
+                    Recent attendance records
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="adminAttendanceHistory"
+            class="admin-history-container"
+        ></div>
+
+    </section>
+
+
+
+    <!-- =========================================
+         LOGOUT
+         ========================================= -->
+
+    <button
+        onclick="logout()"
+        class="admin-logout-button"
+    >
+        Logout
+    </button>
+
+</div>
 
     <!-- =========================================
          STUDENT / NAMAZI DASHBOARD
