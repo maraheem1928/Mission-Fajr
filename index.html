@@ -37,7 +37,7 @@
         <h2>Login</h2>
 
         <input
-            type="email"
+            type="text"
             id="loginEmail"
             placeholder="Mobile Number or Email"
         >
@@ -235,44 +235,159 @@
 
     </div>
 
-
-
     <!-- =========================================
          STUDENT / NAMAZI DASHBOARD
          ========================================= -->
 
-    <div
-        id="studentDashboard"
-        class="section"
-        style="display:none;"
-    >
+    <div id="studentDashboard" class="section" style="display:none;">
 
         <h1>Mission Fajr</h1>
 
-        <h2 id="studentWelcome">
-            Welcome!
-        </h2>
+        <h2 id="studentWelcome">Welcome!</h2>
 
 
-        <!-- =====================================
+        <!-- =========================================
+             MONTHLY ATTENDANCE CALENDAR
+             ========================================= -->
+
+        <section class="attendance-section">
+
+            <div class="attendance-header">
+
+                <h2>Attendance Calendar</h2>
+
+                <h3 id="attendanceMonthTitle">
+                    Attendance
+                </h3>
+
+            </div>
+
+
+            <!-- MONTHLY SUMMARY -->
+
+            <div class="attendance-summary">
+
+                <div class="attendance-card">
+
+                    <span class="attendance-card-title">
+                        Attendance
+                    </span>
+
+                    <strong id="attendancePercentage">
+                        0%
+                    </strong>
+
+                </div>
+
+
+                <div class="attendance-card">
+
+                    <span class="attendance-card-title">
+                        Present
+                    </span>
+
+                    <strong id="presentDays">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="attendance-card">
+
+                    <span class="attendance-card-title">
+                        Absent
+                    </span>
+
+                    <strong id="absentDays">
+                        0
+                    </strong>
+
+                </div>
+
+
+                <div class="attendance-card">
+
+                    <span class="attendance-card-title">
+                        Recorded Days
+                    </span>
+
+                    <strong id="totalDays">
+                        0
+                    </strong>
+
+                </div>
+
+            </div>
+
+
+            <!-- =====================================
+                 ATTENDANCE CALENDAR
+                 ===================================== -->
+
+            <div class="attendance-calendar-container">
+
+                <!-- WEEK DAYS -->
+
+                <div class="calendar-weekdays">
+
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+
+                </div>
+
+
+                <!-- CALENDAR DAYS
+                     app.js will generate these -->
+
+                <div
+                    id="attendanceHistory"
+                    class="attendance-calendar"
+                ></div>
+
+            </div>
+
+
+            <!-- =====================================
+                 CALENDAR LEGEND
+                 ===================================== -->
+
+            <div class="attendance-legend">
+
+                <div>
+                    <span class="legend-present"></span>
+                    Present
+                </div>
+
+
+                <div>
+                    <span class="legend-absent"></span>
+                    Absent
+                </div>
+
+
+                <div>
+                    <span class="legend-not-recorded"></span>
+                    Not Recorded
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- =========================================
              ATTENDANCE ENTRY
-             ===================================== -->
+             ========================================= -->
 
-        <section>
+        <section class="attendance-entry-box">
 
             <h2>Enter Attendance</h2>
-
-            <label for="studentAttendanceDate">
-                Select Date:
-            </label>
-
-            <br>
-
-            <input
-                type="date"
-                id="studentAttendanceDate"
-                onchange="checkSelectedAttendanceDate()"
-            >
 
             <p>
                 You can enter attendance only for
@@ -280,29 +395,68 @@
             </p>
 
 
-            <h3>
-                Attendance Status
-            </h3>
+            <label for="studentAttendanceDate">
+                Select Date:
+            </label>
 
-            <p id="todayAttendanceStatus">
-                Not submitted yet.
+            <br>
+
+
+            <input
+                type="date"
+                id="studentAttendanceDate"
+                onchange="checkSelectedAttendanceDate()"
+            >
+
+
+            <!-- SELECTED DATE -->
+
+            <p>
+
+                Selected Date:
+
+                <strong id="selectedAttendanceDate">
+                    -
+                </strong>
+
             </p>
 
 
-            <button
-                id="studentPresentButton"
-                onclick="setMyAttendance(true)"
-            >
-                Present
-            </button>
+            <!-- CURRENT STATUS -->
+
+            <p>
+
+                Status:
+
+                <strong id="todayAttendanceStatus">
+                    Not submitted yet.
+                </strong>
+
+            </p>
 
 
-            <button
-                id="studentAbsentButton"
-                onclick="setMyAttendance(false)"
-            >
-                Absent
-            </button>
+            <!-- ATTENDANCE BUTTONS -->
+
+            <div class="attendance-buttons">
+
+                <button
+                    id="studentPresentButton"
+                    class="student-present-btn"
+                    onclick="setMyAttendance(true)"
+                >
+                    Present
+                </button>
+
+
+                <button
+                    id="studentAbsentButton"
+                    class="student-absent-btn"
+                    onclick="setMyAttendance(false)"
+                >
+                    Absent
+                </button>
+
+            </div>
 
 
             <p id="studentAttendanceMessage"></p>
@@ -310,61 +464,9 @@
         </section>
 
 
-
-        <!-- =====================================
-             MONTHLY SUMMARY
-             ===================================== -->
-
-        <section>
-
-            <h2>Monthly Summary</h2>
-
-            <p>
-                Attendance:
-                <strong id="attendancePercentage">
-                    0%
-                </strong>
-            </p>
-
-            <p>
-                Total Recorded Days:
-                <strong id="totalDays">
-                    0
-                </strong>
-            </p>
-
-            <p>
-                Present:
-                <strong id="presentDays">
-                    0
-                </strong>
-            </p>
-
-            <p>
-                Absent:
-                <strong id="absentDays">
-                    0
-                </strong>
-            </p>
-
-        </section>
-
-
-
-        <!-- =====================================
-             WHOLE MONTH ATTENDANCE HISTORY
-             ===================================== -->
-
-        <section>
-
-            <h2>
-                Monthly Attendance
-            </h2>
-
-            <div id="attendanceHistory"></div>
-
-        </section>
-
+        <!-- =========================================
+             LOGOUT
+             ========================================= -->
 
         <br>
 
@@ -374,8 +476,7 @@
 
     </div>
 
-
-
+  
     <!-- =========================================
          SUPABASE
          ========================================= -->
