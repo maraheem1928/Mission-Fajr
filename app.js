@@ -1753,7 +1753,6 @@ async function setMyAttendance(present) {
 // =========================================
 // STUDENT - LOAD ATTENDANCE
 // =========================================
-
 async function loadMyAttendance() {
 
     const dateInput =
@@ -1786,11 +1785,24 @@ async function loadMyAttendance() {
             "absentDays"
         );
 
+    const monthTitle =
+        document.getElementById(
+            "attendanceMonthTitle"
+        );
 
-    if (!dateInput) {
+
+    // =========================================
+    // CHECK ELEMENTS
+    // =========================================
+
+    if (!dateInput || !history) {
         return;
     }
 
+
+    // =========================================
+    // TODAY / ALLOWED DATES
+    // =========================================
 
     const today =
         getLocalDateString();
@@ -1809,7 +1821,6 @@ async function loadMyAttendance() {
     dateInput.max =
         today;
 
-
     if (!dateInput.value) {
 
         dateInput.value =
@@ -1819,7 +1830,38 @@ async function loadMyAttendance() {
 
 
     // =========================================
-    // GET USER
+    // UPDATE SELECTED DATE DISPLAY
+    // =========================================
+
+    const selectedDateText =
+        document.getElementById(
+            "selectedAttendanceDate"
+        );
+
+    if (selectedDateText) {
+
+        const selectedDate =
+            new Date(
+                dateInput.value +
+                "T00:00:00"
+            );
+
+        selectedDateText.textContent =
+            selectedDate.toLocaleDateString(
+                "en-IN",
+                {
+                    weekday: "long",
+                    day: "2-digit",
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+    }
+
+
+    // =========================================
+    // GET CURRENT USER
     // =========================================
 
     const {
@@ -1827,59 +1869,76 @@ async function loadMyAttendance() {
             user
         },
         error: userError
-    } = await supabase.auth.getUser();
+    } =
+        await supabase.auth.getUser();
 
 
     if (
         userError ||
         !user
     ) {
+
+        console.error(
+            "User not found:",
+            userError
+        );
+
         return;
+
     }
 
 
     // =========================================
-    // LOAD ALL ATTENDANCE
+    // LOAD ATTENDANCE
     // =========================================
 
     const {
         data,
         error
-    } = await supabase
-        .from("Attendance")
-        .select(
-            "id, attendance_date, present"
-        )
-        .eq(
-            "user_id",
-            user.id
-        )
-        .order(
-            "attendance_date",
-            {
-                ascending: false
-            }
-        );
+    } =
+        await supabase
+            .from("Attendance")
+            .select(
+                "id, attendance_date, present"
+            )
+            .eq(
+                "user_id",
+                user.id
+            )
+            .order(
+                "attendance_date",
+                {
+                    ascending: true
+                }
+            );
 
 
     if (error) {
 
-        console.error(error);
+        console.error(
+            "Attendance loading error:",
+            error
+        );
 
-        if (history) {
-
-            history.innerHTML =
-                "Error loading attendance.";
-
-        }
+        history.innerHTML =
+            `
+            <div class="attendance-error">
+                Error loading attendance.
+            </div>
+            `;
 
         return;
+
     }
 
 
     const records =
         data || [];
 
+
+    // =========================================
+    // CREATE ATTENDANCE MAP
+    // =========================================
 
     const attendanceMap = {};
 
@@ -1917,21 +1976,62 @@ async function loadMyAttendance() {
         now.getMonth();
 
 
+    const firstDay =
+        new Date(
+            currentYear,
+            currentMonth,
+            1
+        );
+
+
+    const lastDay =
+        new Date(
+            currentYear,
+            currentMonth + 1,
+            0
+        );
+
+
+    const daysInMonth =
+        lastDay.getDate();
+
+
+    // =========================================
+    // MONTH TITLE
+    // =========================================
+
+    if (monthTitle) {
+
+        monthTitle.textContent =
+            firstDay.toLocaleString(
+                "en-US",
+                {
+                    month: "long",
+                    year: "numeric"
+                }
+            );
+
+    }
+
+
+    // =========================================
+    // MONTH ATTENDANCE COUNT
+    // =========================================
+
     const monthRecords =
         records.filter(
             record => {
 
-                const date =
+                const recordDate =
                     new Date(
                         record.attendance_date +
                         "T00:00:00"
                     );
 
-
                 return (
-                    date.getFullYear() ===
+                    recordDate.getFullYear() ===
                         currentYear &&
-                    date.getMonth() ===
+                    recordDate.getMonth() ===
                         currentMonth
                 );
 
@@ -1968,6 +2068,10 @@ async function loadMyAttendance() {
             : 0;
 
 
+    // =========================================
+    // UPDATE SUMMARY CARDS
+    // =========================================
+
     if (percentage) {
 
         percentage.textContent =
@@ -2001,57 +2105,48 @@ async function loadMyAttendance() {
 
 
     // =========================================
-    // SHOW WHOLE CURRENT MONTH
+    // CLEAR CALENDAR
     // =========================================
-
-    if (!history) {
-        return;
-    }
-
 
     history.innerHTML = "";
 
 
-    const firstDay =
-        new Date(
-            currentYear,
-            currentMonth,
-            1
-        );
+    // =========================================
+    // EMPTY CELLS BEFORE FIRST DAY
+    // =========================================
 
-
-    const lastDay =
-        new Date(
-            currentYear,
-            currentMonth + 1,
-            0
-        );
-
-
-    const monthTitle =
-        document.createElement(
-            "h3"
-        );
-
-
-    monthTitle.textContent =
-        firstDay.toLocaleString(
-            "en-US",
-            {
-                month: "long",
-                year: "numeric"
-            }
-        );
-
-
-    history.appendChild(
-        monthTitle
-    );
+    const firstWeekday =
+        firstDay.getDay();
 
 
     for (
+        let i = 0;
+        i < firstWeekday;
+        i++
+    ) {
+
+        const emptyCell =
+            document.createElement(
+                "div"
+            );
+
+        emptyCell.className =
+            "attendance-empty-day";
+
+        history.appendChild(
+            emptyCell
+        );
+
+    }
+
+
+    // =========================================
+    // CREATE CALENDAR DAYS
+    // =========================================
+
+    for (
         let day = 1;
-        day <= lastDay.getDate();
+        day <= daysInMonth;
         day++
     ) {
 
@@ -2075,114 +2170,159 @@ async function loadMyAttendance() {
             ];
 
 
-        const row =
+        const dayCell =
             document.createElement(
                 "div"
             );
 
 
-        row.className =
-            "student-month-row";
+        dayCell.className =
+            "attendance-day";
 
 
-        const dateText =
-            date.toLocaleDateString(
-                "en-IN",
-                {
-                    weekday: "short",
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric"
-                }
+        // =====================================
+        // DAY NUMBER
+        // =====================================
+
+        const dayNumber =
+            document.createElement(
+                "div"
             );
 
+        dayNumber.className =
+            "attendance-day-number";
 
-        let statusText;
+        dayNumber.textContent =
+            day;
 
 
-        // Future
+        // =====================================
+        // STATUS
+        // =====================================
+
+        const status =
+            document.createElement(
+                "div"
+            );
+
+        status.className =
+            "attendance-day-status";
+
+
+        // =====================================
+        // TODAY
+        // =====================================
+
+        if (
+            dateString === today
+        ) {
+
+            dayCell.classList.add(
+                "today"
+            );
+
+        }
+
+
+        // =====================================
+        // FUTURE
+        // =====================================
+
         if (
             dateString > today
         ) {
 
-            statusText =
-                "— Future";
+            dayCell.classList.add(
+                "future"
+            );
+
+            status.textContent =
+                "—";
 
         }
 
-        // Already submitted
-        else if (record) {
 
-            statusText =
-                record.present
-                    ? "✓ Present 🔒"
-                    : "✕ Absent 🔒";
+        // =====================================
+        // PRESENT
+        // =====================================
+
+        else if (
+            record &&
+            record.present === true
+        ) {
+
+            dayCell.classList.add(
+                "present"
+            );
+
+            status.textContent =
+                "✓";
 
         }
 
-        // Not submitted
+
+        // =====================================
+        // ABSENT
+        // =====================================
+
+        else if (
+            record &&
+            record.present === false
+        ) {
+
+            dayCell.classList.add(
+                "absent"
+            );
+
+            status.textContent =
+                "✕";
+
+        }
+
+
+        // =====================================
+        // NOT RECORDED
+        // =====================================
+
         else {
 
-            const dateDifference =
-                Math.round(
-                    (
-                        new Date(
-                            today +
-                            "T00:00:00"
-                        ) -
-                        new Date(
-                            dateString +
-                            "T00:00:00"
-                        )
-                    ) /
-                    (
-                        1000 *
-                        60 *
-                        60 *
-                        24
-                    )
-                );
+            dayCell.classList.add(
+                "not-recorded"
+            );
 
-
-            if (
-                dateDifference >= 0 &&
-                dateDifference <= 2
-            ) {
-
-                statusText =
-                    "— Available to enter";
-
-            } else {
-
-                statusText =
-                    "— Not submitted 🔒";
-
-            }
+            status.textContent =
+                "—";
 
         }
 
 
-        row.innerHTML = `
-            <span>${dateText}</span>
-            <span>${statusText}</span>
-        `;
+        // =====================================
+        // ADD CONTENT
+        // =====================================
+
+        dayCell.appendChild(
+            dayNumber
+        );
+
+        dayCell.appendChild(
+            status
+        );
 
 
         history.appendChild(
-            row
+            dayCell
         );
 
     }
 
 
     // =========================================
-    // UPDATE SELECTED DATE
+    // CHECK SELECTED ATTENDANCE DATE
     // =========================================
 
     await checkSelectedAttendanceDate();
+
 }
-
-
 // =========================================
 // PAGE LOAD
 // =========================================
