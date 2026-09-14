@@ -1667,6 +1667,298 @@ button:active {
     .attendance-day-status {
         font-size: 16px;
     }
+    /* =========================================================
+   MISSION FAJR - ADMIN DASHBOARD
+   CLEAN ADMIN DESIGN
+   ========================================================= */
+
+.admin-dashboard-header {
+    margin-bottom: 25px;
+}
+
+.admin-brand {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    opacity: 0.9;
+    margin-bottom: 8px;
+}
+
+.admin-dashboard-header h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 800;
+}
+
+.admin-dashboard-header p {
+    margin: 6px 0 0;
+    opacity: 0.85;
+    font-size: 15px;
+}
+
+
+/* =========================
+   ADMIN WHITE CARDS
+   ========================= */
+
+.admin-attendance-card {
+    background: white;
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+
+/* =========================
+   SECTION TITLE
+   ========================= */
+
+.admin-section-title {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 20px;
+}
+
+.admin-section-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #edf7f1;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.admin-section-title h3 {
+    margin: 0;
+    color: #30483d;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.admin-section-title p {
+    margin: 4px 0 0;
+    color: #718078;
+    font-size: 13px;
+}
+
+
+/* =========================
+   DATE INPUT
+   ========================= */
+
+.admin-label {
+    display: block;
+    margin-bottom: 8px;
+    color: #30483d;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.admin-date-input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 13px 14px;
+    border: 1px solid #dce6e0;
+    border-radius: 11px;
+    background: #f9fbfa;
+    color: #30483d;
+    font-size: 15px;
+    outline: none;
+}
+
+.admin-date-input:focus {
+    border-color: #6b8f7d;
+    box-shadow: 0 0 0 3px rgba(107, 143, 125, 0.12);
+}
+
+
+/* =========================
+   STUDENT LIST
+   ========================= */
+
+.admin-student-list {
+    margin-top: 5px;
+}
+
+
+/* =========================
+   SAVE BUTTON
+   ========================= */
+
+.admin-save-button {
+    width: 100%;
+    margin-top: 20px;
+    padding: 14px 18px;
+    border: none;
+    border-radius: 12px;
+    background: #30483d;
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-save-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(48, 72, 61, 0.18);
+}
+
+.admin-save-button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================
+   MESSAGE
+   ========================= */
+
+.admin-attendance-message {
+    margin: 12px 0 0;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+/* =========================
+   ABSENTEES
+   ========================= */
+
+.admin-absentees-list {
+    color: #30483d;
+}
+
+.admin-absentee-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 13px 10px;
+    border-bottom: 1px solid #edf1ee;
+    color: #30483d;
+    font-weight: 700;
+}
+
+.admin-absentee-row:last-child {
+    border-bottom: none;
+}
+
+
+/* =========================
+   ATTENDANCE HISTORY
+   ========================= */
+
+.admin-history-container {
+    overflow-x: auto;
+}
+
+.admin-history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+}
+
+.admin-history-table th {
+    padding: 12px 10px;
+    background: #f5f8f6;
+    color: #30483d;
+    font-size: 13px;
+    font-weight: 800;
+    text-align: left;
+}
+
+.admin-history-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #edf1ee;
+    color: #4d5f56;
+    font-size: 14px;
+}
+
+.admin-history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.history-present {
+    color: #08752f !important;
+    font-weight: 800;
+}
+
+.history-absent {
+    color: #b30000 !important;
+    font-weight: 800;
+}
+
+
+/* =========================
+   ADMIN LOGOUT
+   ========================= */
+
+.admin-logout-button {
+    width: 100%;
+    margin-top: 5px;
+    padding: 13px 18px;
+    border: 1px solid rgba(255,255,255,0.5);
+    border-radius: 12px;
+    background: transparent;
+    color: white;
+    font-size: 15px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.admin-logout-button:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+
+/* =========================
+   MOBILE ADMIN
+   ========================= */
+
+@media (max-width: 600px) {
+
+    .admin-dashboard-header h1 {
+        font-size: 27px;
+    }
+
+    .admin-attendance-card {
+        padding: 17px;
+        border-radius: 15px;
+    }
+
+    .admin-section-title {
+        gap: 11px;
+    }
+
+    .admin-section-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 18px;
+    }
+
+    .admin-section-title h3 {
+        font-size: 16px;
+    }
+
+    .admin-student-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .admin-attendance-options {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+}
 
     .calendar-weekdays div {
         font-size: 9px;
